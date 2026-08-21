@@ -19,7 +19,7 @@ def clean_phone_number(phone_number):
     phone_number = phone_number.replace("-", "")
 
     # remove invalid phone numbers
-    if len(phone_number) < 7:
+    if len(phone_number) < 5:
         return ""
 
     # remove Irish prefix code
@@ -33,17 +33,7 @@ def clean_phone_number(phone_number):
     if phone_number.startswith(("083", "085", "086", "087", "089"))and len(phone_number) == 10:
         return phone_number[0:3] + " " + phone_number[3:6] + " " + phone_number[6:10]
 
-    # clean landline numbers
-    if len(phone_number) == 7:
-        phone_number = "01" + phone_number
-    elif len(phone_number) == 8 and phone_number.startswith("1"):
-        phone_number = "0" + phone_number
-
-    if phone_number.startswith("01") and len(phone_number) == 9:
-        return phone_number[0:2] + " " + phone_number[2:9]
-
     return ""
-
 
 def clean_address(address):
     address = address.title()
@@ -74,3 +64,33 @@ def is_valid_email(email):
         return True
     except EmailNotValidError:
         return False
+
+def cleanup_customer_data(customer_ids, ws):
+    used_range = ws.UsedRange
+    # Apply filter to column A - Field=1 means the first column of used_range
+    used_range.AutoFilter(
+        Field=1,
+        Criteria1=customer_ids,
+        Operator=7
+    )
+
+    sort_range = ws.Range("A1:G201")
+    ws.Sort.SortFields.Clear()
+    ws.Sort.SortFields.Add(
+        Key=ws.Range("B2:B201"),
+        SortOn=0,
+        Order=1
+    )
+    ws.Sort.SetRange(sort_range)
+    ws.Sort.Header = 1
+    ws.Sort.Orientation = 1
+    ws.Sort.Apply()
+
+
+def update_excel_from_dataframe(df, ws):
+    values = df.where(df.notna(), None).values.tolist()
+
+    ws.Range(
+        ws.Cells(2, 1),
+        ws.Cells(len(values) + 1, len(values[0]))
+    ).Value = values
