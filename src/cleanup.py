@@ -1,4 +1,6 @@
 from email_validator import validate_email, EmailNotValidError
+import phonenumbers
+
 
 def clean_name(customer_name):
     customer_name = " ".join(customer_name.split())
@@ -13,27 +15,23 @@ def clean_email(email):
     return email
 
 def clean_phone_number(phone_number):
-    phone_number = str(phone_number)
-
-    phone_number = phone_number.replace(" ", "")
-    phone_number = phone_number.replace("-", "")
-
-    # remove invalid phone numbers
-    if len(phone_number) < 5:
-        return ""
-
-    # remove Irish prefix code
-    if phone_number.startswith("+353"):
-        phone_number = phone_number[4:]
-
-    # clean mobile numbers
-    if phone_number.startswith(("83", "85", "86", "87", "89")) and len(phone_number) == 9:
+    #phonenumbers package takes a number like 16241234 Dublin number and translates to 062 41234
+    #am putting the 0 in front then phonenumbers package will then format that
+    phone_number = str(phone_number).replace(" ", "")
+    if phone_number.startswith("1") and len(phone_number) == 8:
         phone_number = "0" + phone_number
 
-    if phone_number.startswith(("083", "085", "086", "087", "089"))and len(phone_number) == 10:
-        return phone_number[0:3] + " " + phone_number[3:6] + " " + phone_number[6:10]
+    try:
+        number = phonenumbers.parse(phone_number, "IE")
+        if not phonenumbers.is_valid_number(number):
+            return ""
 
-    return ""
+        formatted_number = phonenumbers.format_number(number, phonenumbers.PhoneNumberFormat.NATIONAL)
+        return formatted_number.replace("(", "").replace(")", "")
+
+    except phonenumbers.NumberParseException:
+        return ""
+
 
 def clean_address(address):
     address = address.title()
@@ -48,8 +46,6 @@ def clean_city(city):
 def clean_postcode(postcode):
     postcode = str(postcode)
     postcode = postcode.replace(" ", "")
-    if len(str(postcode)) != 7:
-        return ""
     postcode = postcode.upper()
     return postcode[:3] + " " + postcode[3:]
 
@@ -58,14 +54,30 @@ def clean_column(df, column, cleaning_function):
         df[column] = df[column].fillna("").apply(cleaning_function)
 
 
-def is_valid_email(email):
-    try:
-        validate_email(email)
-        return True
-    except EmailNotValidError:
-        return False
+
+def filter_to_invalid_emails(df, email_column, ws):
+
+    customer_id_of_invalid_emails = []
+
+    for index, email in enumerate(df[email_column]):
+        try:
+            validate_email(email)
+        except EmailNotValidError:
+            customer_id_of_invalid_emails.append(
+                str(df.iloc[index]["customer_id"])
+            )
+    used_range = ws.UsedRange
+    # Apply filter to column A - Field=1 means the first column of used_range
+    used_range.AutoFilter(
+        Field=1,
+        Criteria1=customer_id_of_invalid_emails,
+        Operator=7
+    )
+    print(str(customer_id_of_invalid_emails))
+
 
 def cleanup_customer_data(customer_ids, ws):
+
     used_range = ws.UsedRange
     # Apply filter to column A - Field=1 means the first column of used_range
     used_range.AutoFilter(
@@ -74,10 +86,10 @@ def cleanup_customer_data(customer_ids, ws):
         Operator=7
     )
 
-    sort_range = ws.Range("A1:G201")
+    sort_range = ws.Range("A1:G191")
     ws.Sort.SortFields.Clear()
     ws.Sort.SortFields.Add(
-        Key=ws.Range("B2:B201"),
+        Key=ws.Range("B2:B191"),
         SortOn=0,
         Order=1
     )
