@@ -98,6 +98,8 @@ def show_temporary_message(root, text, duration_ms=2500):
 def show_cleanup_panel(
     root,
     excel_hwnd,
+    excel_app,
+    workbook,
     action_1=None,
     action_2=None,
     action_3=None
@@ -243,53 +245,95 @@ def show_cleanup_panel(
 
         nonlocal excel_was_minimized
 
-        # Excel has been closed.
-        if not win32gui.IsWindow(excel_hwnd):
+        # Check if Excel is still running using COM object
+        try:
+            # Try to access Excel application - this will fail if Excel is closed
+            excel_app.Visible
+        except Exception:
+            # Excel has been closed - destroy panel and root to exit program
             panel.destroy()
+            root.destroy()
+            return
+
+        # Check if the workbook is still open
+        try:
+            workbook.Name
+        except Exception:
+            # Workbook has been closed - destroy panel and root to exit program
+            panel.destroy()
+            root.destroy()
+            return
+
+        # Excel has been closed (window handle check as backup)
+        try:
+            if not win32gui.IsWindow(excel_hwnd):
+                panel.destroy()
+                root.destroy()
+                return
+        except Exception:
+            # Window handle became invalid
+            panel.destroy()
+            root.destroy()
             return
 
         # Excel is minimised.
-        if win32gui.IsIconic(excel_hwnd):
+        try:
+            if win32gui.IsIconic(excel_hwnd):
+                if not excel_was_minimized:
+                    excel_was_minimized = True
 
-            if not excel_was_minimized:
-                excel_was_minimized = True
-
-                if panel.state() != "iconic":
-                    panel.iconify()
+                    if panel.state() != "iconic":
+                        panel.iconify()
+        except Exception:
+            # Window handle became invalid
+            panel.destroy()
+            root.destroy()
+            return
 
         # Excel is visible.
-        else:
+        try:
+            if not win32gui.IsIconic(excel_hwnd):
+                if excel_was_minimized:
+                    excel_was_minimized = False
 
-            if excel_was_minimized:
-                excel_was_minimized = False
+                    # Excel has just been restored.
+                    if panel.state() == "iconic":
+                        panel.deiconify()
 
-                # Excel has just been restored.
-                if panel.state() == "iconic":
-                    panel.deiconify()
+                # Keep the panel positioned beside Excel.
+                if panel.state() != "iconic":
 
-            # Keep the panel positioned beside Excel.
-            if panel.state() != "iconic":
+                    try:
+                        left, top, right, bottom = (
+                            win32gui.GetWindowRect(excel_hwnd)
+                        )
 
-                left, top, right, bottom = (
-                    win32gui.GetWindowRect(excel_hwnd)
-                )
+                        x = (
+                            right
+                            - panel_width
+                            - right_padding
+                        )
 
-                x = (
-                    right
-                    - panel_width
-                    - right_padding
-                )
+                        y = (
+                            top
+                            + ((bottom - top) // 2)
+                            - (panel_height // 2)
+                        )
 
-                y = (
-                    top
-                    + ((bottom - top) // 2)
-                    - (panel_height // 2)
-                )
-
-                panel.geometry(
-                    f"{panel_width}x{panel_height}"
-                    f"+{x}+{y}"
-                )
+                        panel.geometry(
+                            f"{panel_width}x{panel_height}"
+                            f"+{x}+{y}"
+                        )
+                    except Exception:
+                        # Excel window handle became invalid during positioning
+                        panel.destroy()
+                        root.destroy()
+                        return
+        except Exception:
+            # Window handle became invalid
+            panel.destroy()
+            root.destroy()
+            return
 
         panel.after(
             100,

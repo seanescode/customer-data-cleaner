@@ -51,6 +51,8 @@ def main():
     show_cleanup_panel(
         root,
         excel.Hwnd,
+        excel,
+        wb,
         lambda: filter_duplicate_customers(
             file_loc,
             ws,
