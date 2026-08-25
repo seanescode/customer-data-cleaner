@@ -1,8 +1,10 @@
 import pandas
-from cleanup import filter_to_duplicates
 import win32com.client as win32
-from dialogs import show_cleanup_panel, create_dialog_root
-
+from dialogs import (
+    show_cleanup_panel,
+    create_dialog_root,
+    show_temporary_message
+)
 from cleanup import (
     clean_column,
     clean_name,
@@ -14,7 +16,8 @@ from cleanup import (
     filter_to_invalid_emails,
     update_excel_from_dataframe,
     remove_filters,
-    find_duplicate_customers
+    get_duplicate_customers,
+    filter_duplicate_customers
 )
 
 def main():
@@ -31,7 +34,7 @@ def main():
     clean_column(df, "city", clean_city)
     clean_column(df, "postcode", clean_postcode)
 
-    all_duplicates = find_duplicate_customers(df)
+    all_duplicates = get_duplicate_customers(df)
     # Sort by Name so the matching duplicates sit right next to each other
     sorted_duplicates = all_duplicates.sort_values(by='name')
     # get the customer_id for each duplicate value so can use this to filter data to show duplicates
@@ -48,8 +51,17 @@ def main():
     show_cleanup_panel(
         root,
         excel.Hwnd,
-        lambda: filter_to_duplicates(customer_ids, ws, "name"),
-        lambda: filter_to_invalid_emails(pandas.read_excel(file_loc), ws,"email"),
+        lambda: filter_duplicate_customers(
+            file_loc,
+            ws,
+            lambda text: show_temporary_message(root, text)
+        ),
+        lambda: filter_to_invalid_emails(
+            file_loc,
+            ws,
+            "email",
+            lambda text: show_temporary_message(root, text)
+        ),
         lambda: remove_filters(ws)
     )
     root.mainloop()

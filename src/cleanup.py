@@ -1,7 +1,5 @@
 from email_validator import validate_email, EmailNotValidError
-import phonenumbers
 import pandas
-import time
 
 
 def clean_name(customer_name):
@@ -66,8 +64,8 @@ def remove_filters(ws):
     if ws.FilterMode:
         ws.ShowAllData()
 
-def filter_to_invalid_emails(df, ws, email_column):
-
+def filter_to_invalid_emails(file_loc, ws, email_column, show_message=None):
+    df = pandas.read_excel(file_loc)
     remove_filters(ws)
 
     invalid_customer_ids = []
@@ -95,8 +93,10 @@ def filter_to_invalid_emails(df, ws, email_column):
     filter_customer_ids = invalid_customer_ids
 
     if not filter_customer_ids:
-        # No invalid emails, so deliberately show no customers
-        filter_customer_ids = ["NO_CUSTOMER_MATCH"]
+        remove_filters(ws)
+        if show_message is not None:
+            show_message("No invalid emails were found.")
+        return
 
     ws.UsedRange.AutoFilter(
         Field=1,
@@ -104,58 +104,6 @@ def filter_to_invalid_emails(df, ws, email_column):
         Operator=7
     )
 
-
-def filter_to_duplicates(customer_ids, ws, header_name):
-
-    remove_filters(ws)
-
-    if not customer_ids:
-        return
-    used_range = ws.UsedRange
-    # Apply filter to column A - Field=1 means the first column of used_range
-
-    used_range.AutoFilter(
-        Field=1,
-        Criteria1=tuple(customer_ids),
-        Operator=7
-    )
-
-    column_of_name = find_column(ws, header_name)
-
-    if column_of_name is None:
-        raise ValueError(f"Column '{header_name}' not found")
-
-    starting_cell_to_sort = ws.Cells(2, column_of_name)
-
-    last_row = find_last_row(ws)
-    last_cell_to_sort = ws.Cells(last_row, column_of_name)
-
-    #sort_range = ws.Range("A1:G191")
-    ws.Sort.SortFields.Clear()
-    ws.Sort.SortFields.Add(
-        Key=ws.Range(starting_cell_to_sort, last_cell_to_sort),
-        SortOn=0,
-        Order=1
-    )
-    ws.Sort.SetRange(used_range)
-    ws.Sort.Header = 1
-    ws.Sort.Orientation = 1
-    #ws.Sort.Apply()
-
-
-def find_column(ws, header_name):
-    last_column = ws.UsedRange.Columns.Count
-
-    for column in range(1, last_column + 1):
-        value = ws.Cells(1, column).Value
-
-        if value is not None and str(value).strip().lower() == header_name.lower():
-            return column
-
-    return None
-
-def find_last_row(ws):
-    return ws.UsedRange.Row + ws.UsedRange.Rows.Count - 1
 
 def update_excel_from_dataframe(df, ws):
     values = df.where(df.notna(), None).values.tolist()
@@ -172,11 +120,8 @@ def update_excel_from_dataframe(df, ws):
 
     target.Value = values
 
-    print("First five rows read back from Excel:")
-    for row in target.Value[:5]:
-        print(row)
 
-def find_duplicate_customers(df):
+def get_duplicate_customers(df):
     # find duplicates by different table data - to have multiple check points to help catch all duplicates
     dup_email = df.duplicated(subset=['name', 'email'], keep=False)
     dup_phone = df.duplicated(subset=['name', 'phone'], keep=False)
@@ -186,3 +131,23 @@ def find_duplicate_customers(df):
     # Combine all duplicate variables using "OR" logic (|) to show all them
     all_duplicates = df[dup_email | dup_phone | dup_address_first_line | dup_postcode]
     return all_duplicates
+
+
+def filter_duplicate_customers(file_loc, ws, show_message=None):
+    duplicate_customers = get_duplicate_customers(pandas.read_excel(file_loc))
+    duplicate_customer_ids = []
+    for index, cust_id in enumerate(duplicate_customers["customer_id"]):
+        duplicate_customer_ids.append(str(duplicate_customers.iloc[index]["customer_id"]))
+
+    if not duplicate_customer_ids:
+        remove_filters(ws)
+        if show_message is not None:
+            show_message("No duplicate customers were found.")
+        return
+
+    filter_spreadsheet = 7
+    ws.UsedRange.AutoFilter(
+        Field=1,
+        Criteria1=tuple(duplicate_customer_ids),
+        Operator=filter_spreadsheet
+    )

@@ -1,4 +1,4 @@
-from tkinter import Button, Label, Tk, Toplevel
+from tkinter import Button, Frame, Label, Tk, Toplevel
 import win32con
 import win32gui
 
@@ -8,6 +8,92 @@ def create_dialog_root():
     root.withdraw()
     return root
 
+def show_temporary_message(root, text, duration_ms=2500):
+    message = Toplevel(root)
+
+    message.withdraw()
+    message.title("")
+    message.resizable(False, False)
+
+    frame = Frame(
+        message,
+        padx=25,
+        pady=20
+    )
+    frame.pack()
+
+    Label(
+        frame,
+        text=text,
+        font=("Arial", 9),
+        justify="center",
+        wraplength=300
+    ).pack(
+        padx=10,
+        pady=(0, 12)
+    )
+
+    Label(
+        frame,
+        text="This message will close automatically.",
+        font=("Arial", 8),
+        foreground="#666666"
+    ).pack()
+
+    # Let Tkinter calculate the complete size of the dialog.
+    message.update_idletasks()
+
+    width = message.winfo_reqwidth()
+    height = message.winfo_reqheight()
+
+    # Centre on the screen.
+    screen_width = message.winfo_screenwidth()
+    screen_height = message.winfo_screenheight()
+
+    x = (screen_width - width) // 2
+    y = (screen_height - height) // 2
+
+    message.geometry(
+        f"{width}x{height}+{x}+{y}"
+    )
+
+    # Show only after the final position has been calculated.
+    message.deiconify()
+    message.lift()
+    message.attributes("-topmost", True)
+
+    # Each popup has its own independent timer.
+    closed = False
+
+    def close_message():
+        nonlocal closed
+
+        if closed:
+            return
+
+        closed = True
+
+        try:
+            if message.winfo_exists():
+                message.destroy()
+        except:
+            pass
+
+    def remove_topmost():
+        if not closed:
+            try:
+                if message.winfo_exists():
+                    message.attributes("-topmost", False)
+            except:
+                pass
+
+    message.after(200, remove_topmost)
+    message.after(duration_ms, close_message)
+
+    message.protocol(
+        "WM_DELETE_WINDOW",
+        close_message
+    )
 
 def show_cleanup_panel(
     root,
@@ -18,19 +104,24 @@ def show_cleanup_panel(
 ):
     panel = Toplevel(root)
 
-    panel.title("Customer Data Cleanup Assistant")
+    panel.title("Data Cleanup Panel")
     panel.geometry("310x225")
     panel.resizable(False, False)
     panel.update_idletasks()
 
-    # Keep the panel fixed-size but explicitly retain its minimize button.
+    # Keep the panel fixed-size but retain the minimise button.
     panel_hwnd = panel.winfo_id()
-    panel_style = win32gui.GetWindowLong(panel_hwnd, win32con.GWL_STYLE)
+    panel_style = win32gui.GetWindowLong(
+        panel_hwnd,
+        win32con.GWL_STYLE
+    )
+
     win32gui.SetWindowLong(
         panel_hwnd,
         win32con.GWL_STYLE,
         panel_style | win32con.WS_MINIMIZEBOX
     )
+
     win32gui.SetWindowPos(
         panel_hwnd,
         0,
@@ -45,20 +136,17 @@ def show_cleanup_panel(
     )
 
     panel_width = 310
-    panel_height = 225
+    panel_height = 200
     right_padding = 35
+
     excel_was_minimized = False
-    panel_was_minimized_before_excel = False
 
     def show_close_message():
 
         panel.update_idletasks()
 
-        # The visible outer edge includes the window border, whereas Tk's
-        # geometry refers to the client area.  Use the real edge so the
-        # message box is exactly right-aligned with the panel.
-        _, panel_y, panel_right, _ = win32gui.GetWindowRect(
-            panel.winfo_id()
+        _, panel_y, panel_right, _ = (
+            win32gui.GetWindowRect(panel.winfo_id())
         )
 
         message = Toplevel(panel)
@@ -76,26 +164,26 @@ def show_cleanup_panel(
             relief="solid",
             borderwidth=1
         )
+
         message_label.pack(
             fill="both",
             expand=True
         )
 
-        # Size the box from the label's requested size, so the single-line
-        # message is never clipped after its wording is changed.
         message.update_idletasks()
+
         message_width = message_label.winfo_reqwidth() + 2
         message_height = message_label.winfo_reqheight() + 2
 
-        # Align the message's right edge with the panel and keep it above it.
         message_x = panel_right - message_width
         message_y = panel_y - message_height - 35
+
         message.geometry(
             f"{message_width}x{message_height}"
             f"+{message_x}+{message_y}"
         )
-        message.deiconify()
 
+        message.deiconify()
         message.lift()
 
         message.after(
@@ -110,29 +198,23 @@ def show_cleanup_panel(
 
     Label(
         panel,
-        text="Customer Data Review",
+        text="Do the following steps in order:",
         font=("Arial", 13, "bold")
     ).pack(pady=(10, 2))
 
     Label(
         panel,
-        text="Complete the following steps in order:",
-        font=("Arial", 9)
-    ).pack(pady=(0, 7))
-
-    Label(
-        panel,
         text=(
-            "1.  Review and remove duplicate records\n"
-            "2.  Review invalid email addresses\n"
-            "3.  Remove filters to see full clean results"
+            "    1. Review and remove duplicate records\n"
+            "    2. Review and remove invalid syntax emails\n"
+            "    3. Clear filters to see cleaned data"
         ),
         font=("Arial", 9),
         justify="left",
         anchor="w"
     ).pack(
         anchor="w",
-        padx=35,
+        padx=25,
         pady=(0, 7)
     )
 
@@ -145,7 +227,7 @@ def show_cleanup_panel(
 
     Button(
         panel,
-        text="Review Invalid Emails",
+        text="Review Invalid Syntax Emails",
         width=30,
         command=action_2
     ).pack(pady=2)
@@ -159,31 +241,35 @@ def show_cleanup_panel(
 
     def position_panel():
 
-        nonlocal excel_was_minimized, panel_was_minimized_before_excel
+        nonlocal excel_was_minimized
 
+        # Excel has been closed.
         if not win32gui.IsWindow(excel_hwnd):
             panel.destroy()
             return
 
+        # Excel is minimised.
         if win32gui.IsIconic(excel_hwnd):
+
             if not excel_was_minimized:
-                panel_was_minimized_before_excel = (
-                    panel.state() == "iconic"
-                )
-                if not panel_was_minimized_before_excel:
+                excel_was_minimized = True
+
+                if panel.state() != "iconic":
                     panel.iconify()
-            excel_was_minimized = True
 
+        # Excel is visible.
         else:
-            # Restore the panel only when Excel returns from being minimized.
-            # Do not call deiconify for a panel the user has minimized.
-            if excel_was_minimized:
-                if not panel_was_minimized_before_excel:
-                    panel.deiconify()
-                excel_was_minimized = False
-                panel_was_minimized_before_excel = False
 
+            if excel_was_minimized:
+                excel_was_minimized = False
+
+                # Excel has just been restored.
+                if panel.state() == "iconic":
+                    panel.deiconify()
+
+            # Keep the panel positioned beside Excel.
             if panel.state() != "iconic":
+
                 left, top, right, bottom = (
                     win32gui.GetWindowRect(excel_hwnd)
                 )
@@ -210,7 +296,11 @@ def show_cleanup_panel(
             position_panel
         )
 
-    # Position it immediately.
+    # Show immediately.
+    panel.deiconify()
+    panel.lift()
+
+    # Start positioning/monitoring Excel.
     position_panel()
 
     return panel
