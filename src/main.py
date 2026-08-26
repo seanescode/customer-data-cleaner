@@ -1,70 +1,120 @@
+import pywintypes
+import tomllib
+from pathlib import Path
+
 import pandas
 import win32com.client as win32
-from dialogs import (
-    show_cleanup_panel,
-    create_dialog_root,
-    show_temporary_message
-)
-from cleanup import (
-    clean_column,
-    clean_name,
-    clean_email,
-    clean_phone_number,
-    clean_address,
-    clean_city,
-    clean_postcode,
-    filter_to_invalid_emails,
-    update_excel_from_dataframe,
-    remove_filters,
-    get_duplicate_customers,
-    filter_duplicate_customers
-)
+
+import cleanup
+import dialogs
+
+
+def handle_duplicate_filter(file_loc, ws, root):
+    cleanup.filter_duplicate_customers(
+        file_loc,
+        ws,
+        lambda text: dialogs.show_temporary_message(root, text)
+    )
+
+
+def handle_email_filter(file_loc, ws, email_column, root):
+    cleanup.filter_to_invalid_emails(
+        file_loc,
+        ws,
+        email_column,
+        lambda text: dialogs.show_temporary_message(root, text)
+    )
+
+
+def handle_remove_filters(ws):
+    cleanup.remove_filters(ws)
+
 
 def main():
 
-    # set up dataframe
-    file_loc = r"C:\Users\seane\Documents\customer_data_clean_up\client_data_cleanup_project.xlsx"
-    df = pandas.read_excel(file_loc)
+    # Load configuration
+    config_path = Path(__file__).parent.parent / "config.toml"
+    try:
+        with open(config_path, "rb") as f:
+            config = tomllib.load(f)
+    except FileNotFoundError:
+        dialogs.show_error_dialog("Error", f"Config file not found at {config_path}")
+        return
+    except tomllib.TOMLDecodeError as e:
+        dialogs.show_error_dialog("Error", f"Invalid TOML in config file: {e}")
+        return
+    except Exception as e:
+        dialogs.show_error_dialog("Error", f"Error loading config: {e}")
+        return
 
-    #clean data
-    clean_column(df, "name", clean_name)
-    clean_column(df, "email", clean_email)
-    clean_column(df, "phone", clean_phone_number)
-    clean_column(df, "address", clean_address)
-    clean_column(df, "city", clean_city)
-    clean_column(df, "postcode", clean_postcode)
+    try:
+        file_loc = config["spreadsheet"]["file_path"]
+        worksheet_name = config["spreadsheet"]["worksheet_name"]
+    except KeyError as e:
+        dialogs.show_error_dialog("Error", f"Missing required config key: {e}")
+        return
 
-    all_duplicates = get_duplicate_customers(df)
-    # Sort by Name so the matching duplicates sit right next to each other
-    sorted_duplicates = all_duplicates.sort_values(by='name')
-    # get the customer_id for each duplicate value so can use this to filter data to show duplicates
-    customer_ids = sorted_duplicates["customer_id"].astype(str).tolist()
+    try:
+        df = pandas.read_excel(file_loc)
+    except FileNotFoundError:
+        dialogs.show_error_dialog("Error", f"Spreadsheet file not found at {file_loc}")
+        return
+    except Exception as e:
+        dialogs.show_error_dialog("Error", f"Error reading spreadsheet: {e}")
+        return
+
+    # clean data
+    columns_config = config["columns"]
+    cleanup.clean_column(df, columns_config["name"], cleanup.clean_name)
+    cleanup.clean_column(df, columns_config["email"], cleanup.clean_email)
+    cleanup.clean_column(df, columns_config["phone"], cleanup.clean_phone_number)
+    cleanup.clean_column(df, columns_config["address"], cleanup.clean_address)
+    cleanup.clean_column(df, columns_config["city"], cleanup.clean_city)
+    cleanup.clean_column(df, columns_config["postcode"], cleanup.clean_postcode)
 
     # Open spreadsheet
-    excel = win32.Dispatch("Excel.Application")
-    excel.Visible = True
-    wb = excel.Workbooks.Open(r"C:\Users\seane\Documents\customer_data_clean_up\client_data_cleanup_project.xlsx")
-    ws = wb.Worksheets("Customer Records")
+    try:
+        excel = win32.Dispatch("Excel.Application")
+        excel.Visible = True
+    except pywintypes.com_error as e:
+        dialogs.show_error_dialog("Error", f"Excel COM error: {e}")
+        return
+    except Exception as e:
+        dialogs.show_error_dialog("Error", f"Unexpected error launching Excel: {e}")
+        return
 
-    update_excel_from_dataframe(df, ws)
-    root = create_dialog_root()
-    show_cleanup_panel(
+    try:
+        wb = excel.Workbooks.Open(file_loc)
+        ws = wb.Worksheets(worksheet_name)
+    except pywintypes.com_error as e:
+        dialogs.show_error_dialog("Error", f"Excel COM error opening spreadsheet: {e}")
+        return
+    except Exception as e:
+        dialogs.show_error_dialog("Error", f"Unexpected error opening spreadsheet: {e}")
+        return
+
+    try:
+        cleanup.update_spreadsheet_from_dataframe(df, ws)
+    except pywintypes.com_error as e:
+        dialogs.show_error_dialog("Error", f"Excel COM error updating spreadsheet: {e}")
+        return
+    except ValueError as e:
+        dialogs.show_error_dialog("Error", f"Data conversion error: {e}")
+        return
+    except Exception as e:
+        dialogs.show_error_dialog("Error", f"Unexpected error updating spreadsheet: {e}")
+        return
+
+    root = dialogs.create_dialog_root()
+
+    dialogs.show_cleanup_panel(
         root,
         excel.Hwnd,
         excel,
         wb,
-        lambda: filter_duplicate_customers(
-            file_loc,
-            ws,
-            lambda text: show_temporary_message(root, text)
-        ),
-        lambda: filter_to_invalid_emails(
-            file_loc,
-            ws,
-            "email",
-            lambda text: show_temporary_message(root, text)
-        ),
-        lambda: remove_filters(ws)
+        lambda: handle_duplicate_filter(file_loc, ws, root),
+        lambda: handle_email_filter(file_loc, ws, config["columns"]["email"], root),
+        lambda: handle_remove_filters(ws)
     )
     root.mainloop()
 

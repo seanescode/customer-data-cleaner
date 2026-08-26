@@ -1,12 +1,21 @@
-from tkinter import Button, Frame, Label, Tk, Toplevel
+import tkinter.messagebox
 import win32con
 import win32gui
+
+from tkinter import Button, Frame, Label, Tk, Toplevel
 
 
 def create_dialog_root():
     root = Tk()
     root.withdraw()
     return root
+
+
+def show_error_dialog(title, message):
+    error_root = Tk()
+    error_root.withdraw()
+    tkinter.messagebox.showerror(title, message)
+    error_root.destroy()
 
 def show_temporary_message(root, text, duration_ms=2500):
     message = Toplevel(root)
@@ -200,7 +209,7 @@ def show_cleanup_panel(
 
     Label(
         panel,
-        text="Do the following steps in order:",
+        text="Steps to be done in order:",
         font=("Arial", 13, "bold")
     ).pack(pady=(10, 2))
 
@@ -209,7 +218,7 @@ def show_cleanup_panel(
         text=(
             "    1. Review and remove duplicate records\n"
             "    2. Review and remove invalid syntax emails\n"
-            "    3. Clear filters to see cleaned data"
+            "    3. Remove filters to see cleaned data"
         ),
         font=("Arial", 9),
         justify="left",

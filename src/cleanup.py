@@ -1,5 +1,5 @@
-from email_validator import validate_email, EmailNotValidError
 import pandas
+from email_validator import EmailNotValidError, validate_email
 
 
 def clean_name(customer_name):
@@ -105,7 +105,7 @@ def filter_to_invalid_emails(file_loc, ws, email_column, show_message=None):
     )
 
 
-def update_excel_from_dataframe(df, ws):
+def update_spreadsheet_from_dataframe(df, ws):
     values = df.where(df.notna(), None).values.tolist()
     remove_filters(ws)
     ws.Range(

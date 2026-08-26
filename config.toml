@@ -1,0 +1,11 @@
+[spreadsheet]
+file_path = "C:\\Users\\seane\\Documents\\customer_data_clean_up\\client_data_cleanup_project.xlsx"
+worksheet_name = "Customer Records"
+
+[columns]
+name = "name"
+email = "email"
+phone = "phone"
+address = "address"
+city = "city"
+postcode = "postcode"
