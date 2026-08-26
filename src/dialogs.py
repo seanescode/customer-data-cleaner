@@ -1,8 +1,8 @@
 import tkinter.messagebox
+from tkinter import Button, Frame, Label, Tk, Toplevel
+
 import win32con
 import win32gui
-
-from tkinter import Button, Frame, Label, Tk, Toplevel
 
 
 def create_dialog_root():
@@ -16,6 +16,7 @@ def show_error_dialog(title, message):
     error_root.withdraw()
     tkinter.messagebox.showerror(title, message)
     error_root.destroy()
+
 
 def show_temporary_message(root, text, duration_ms=2500):
     message = Toplevel(root)
@@ -104,14 +105,15 @@ def show_temporary_message(root, text, duration_ms=2500):
         close_message
     )
 
+
 def show_cleanup_panel(
-    root,
-    excel_hwnd,
-    excel_app,
-    workbook,
-    action_1=None,
-    action_2=None,
-    action_3=None
+        root,
+        excel_hwnd,
+        excel_app,
+        workbook,
+        action_1=None,
+        action_2=None,
+        action_3=None
 ):
     panel = Toplevel(root)
 
@@ -318,15 +320,15 @@ def show_cleanup_panel(
                         )
 
                         x = (
-                            right
-                            - panel_width
-                            - right_padding
+                                right
+                                - panel_width
+                                - right_padding
                         )
 
                         y = (
-                            top
-                            + ((bottom - top) // 2)
-                            - (panel_height // 2)
+                                top
+                                + ((bottom - top) // 2)
+                                - (panel_height // 2)
                         )
 
                         panel.geometry(

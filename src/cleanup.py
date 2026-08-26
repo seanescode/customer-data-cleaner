@@ -1,5 +1,10 @@
 import pandas
+
 from email_validator import EmailNotValidError, validate_email
+
+# Excel AutoFilter constants
+CUSTOMER_ID_COLUMN = 1
+FILTER_VALUES_OPERATOR = 7
 
 
 def clean_name(customer_name):
@@ -29,24 +34,27 @@ def clean_phone_number(phone_number):
     if phone_number.startswith("+353"):
         phone_number = phone_number[4:]
 
-    # clean mobile numbers
+    # clean mobile numbers (Excel takes out the zero so have to add back)
     if phone_number.startswith(("83", "85", "86", "87", "89")) and len(phone_number) == 9:
         phone_number = "0" + phone_number
 
-    if phone_number.startswith(("083", "085", "086", "087", "089"))and len(phone_number) == 10:
+    if phone_number.startswith(("083", "085", "086", "087", "089")) and len(phone_number) == 10:
         return phone_number[0:3] + " " + phone_number[3:6] + " " + phone_number[6:10]
 
     return ""
+
 
 def clean_address(address):
     address = address.title()
     address = " ".join(address.split())
     return address
 
+
 def clean_city(city):
     city = city.title()
     city = city.replace(" ", "")
     return city
+
 
 def clean_postcode(postcode):
     postcode = str(postcode)
@@ -60,9 +68,22 @@ def clean_column(df, column, cleaning_function):
         df[column] = df[column].fillna("").apply(cleaning_function)
 
 
+def update_spreadsheet_from_dataframe(df, ws):
+    values = df.where(df.notna(), None).values.tolist()
+    remove_filters(ws)
+
+    target = ws.Range(
+        ws.Cells(2, 1),
+        ws.Cells(len(values) + 1, len(values[0]))
+    )
+
+    target.Value = values
+
+
 def remove_filters(ws):
     if ws.FilterMode:
         ws.ShowAllData()
+
 
 def filter_to_invalid_emails(file_loc, ws, email_column, show_message=None):
     df = pandas.read_excel(file_loc)
@@ -99,26 +120,10 @@ def filter_to_invalid_emails(file_loc, ws, email_column, show_message=None):
         return
 
     ws.UsedRange.AutoFilter(
-        Field=1,
+        Field=CUSTOMER_ID_COLUMN,
         Criteria1=tuple(filter_customer_ids),
-        Operator=7
+        Operator=FILTER_VALUES_OPERATOR
     )
-
-
-def update_spreadsheet_from_dataframe(df, ws):
-    values = df.where(df.notna(), None).values.tolist()
-    remove_filters(ws)
-    ws.Range(
-        ws.Cells(2, 1),
-        ws.Cells(len(values) + 1, len(values[0]))
-    ).Value = values
-
-    target = ws.Range(
-        ws.Cells(2, 1),
-        ws.Cells(len(values) + 1, len(values[0]))
-    )
-
-    target.Value = values
 
 
 def get_duplicate_customers(df):
@@ -137,7 +142,7 @@ def filter_duplicate_customers(file_loc, ws, show_message=None):
     duplicate_customers = get_duplicate_customers(pandas.read_excel(file_loc))
     duplicate_customer_ids = []
     for index, cust_id in enumerate(duplicate_customers["customer_id"]):
-        duplicate_customer_ids.append(str(duplicate_customers.iloc[index]["customer_id"]))
+        duplicate_customer_ids.append(str(cust_id))
 
     if not duplicate_customer_ids:
         remove_filters(ws)
@@ -145,9 +150,8 @@ def filter_duplicate_customers(file_loc, ws, show_message=None):
             show_message("No duplicate customers were found.")
         return
 
-    filter_spreadsheet = 7
     ws.UsedRange.AutoFilter(
-        Field=1,
+        Field=CUSTOMER_ID_COLUMN,
         Criteria1=tuple(duplicate_customer_ids),
-        Operator=filter_spreadsheet
+        Operator=FILTER_VALUES_OPERATOR
     )

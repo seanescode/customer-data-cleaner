@@ -1,8 +1,8 @@
-import pywintypes
 import tomllib
 from pathlib import Path
 
 import pandas
+import pywintypes
 import win32com.client as win32
 
 import cleanup
@@ -43,16 +43,20 @@ def setup_and_run_dialog(excel, wb, file_loc, ws, config):
     )
     root.mainloop()
 
+
 def load_config():
     config_path = Path(__file__).parent.parent / "config.toml"
     with open(config_path, "rb") as f:
         return tomllib.load(f)
 
+
 def get_spreadsheet(config):
     return config["spreadsheet"]["file_path"], config["spreadsheet"]["worksheet_name"]
 
+
 def get_dataframe(file_loc):
     return pandas.read_excel(file_loc)
+
 
 def clean_data(df, config):
     columns_config = config["columns"]
@@ -63,18 +67,22 @@ def clean_data(df, config):
     cleanup.clean_column(df, columns_config["city"], cleanup.clean_city)
     cleanup.clean_column(df, columns_config["postcode"], cleanup.clean_postcode)
 
+
 def launch_spreadsheet_app():
     excel = win32.Dispatch("Excel.Application")
     excel.Visible = True
     return excel
+
 
 def open_spreadsheet(excel, file_loc, worksheet_name):
     wb = excel.Workbooks.Open(file_loc)
     ws = wb.Worksheets(worksheet_name)
     return wb, ws
 
+
 def apply_dataframe_to_spreadsheet(df, ws):
     cleanup.update_spreadsheet_from_dataframe(df, ws)
+
 
 def main():
     try:
