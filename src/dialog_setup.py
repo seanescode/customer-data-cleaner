@@ -1,5 +1,6 @@
 import dialogs
-from ui_handlers import handle_duplicate_filter, handle_email_filter, handle_remove_filters
+
+from ui_handlers import handle_duplicate_customer_filter, handle_email_filter, handle_remove_filters
 
 
 def setup_and_run_dialog(excel, wb, file_loc, ws, config):
@@ -10,7 +11,7 @@ def setup_and_run_dialog(excel, wb, file_loc, ws, config):
             excel.Hwnd,
             excel,
             wb,
-            lambda: handle_duplicate_filter(file_loc, ws, root),
+            lambda: handle_duplicate_customer_filter(file_loc, ws, config["columns"]["name"], root),
             lambda: handle_email_filter(file_loc, ws, config["columns"]["email"], root),
             lambda: handle_remove_filters(ws)
         )

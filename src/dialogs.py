@@ -111,9 +111,9 @@ def show_cleanup_panel(
         excel_hwnd,
         excel_app,
         workbook,
-        action_1=None,
-        action_2=None,
-        action_3=None
+        review_duplicate_customers_button=None,
+        review_invalid_emails_button=None,
+        remove_filters_button=None
 ):
     panel = Toplevel(root)
 
@@ -235,21 +235,21 @@ def show_cleanup_panel(
         panel,
         text="Review Duplicate Customers",
         width=30,
-        command=action_1
+        command=review_duplicate_customers_button
     ).pack(pady=2)
 
     Button(
         panel,
         text="Review Invalid Syntax Emails",
         width=30,
-        command=action_2
+        command=review_invalid_emails_button
     ).pack(pady=2)
 
     Button(
         panel,
         text="Remove filters",
         width=30,
-        command=action_3
+        command=remove_filters_button
     ).pack(pady=(2, 0))
 
     def position_panel():

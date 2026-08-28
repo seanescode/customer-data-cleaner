@@ -1,8 +1,8 @@
 import cleanup
 import config
-import spreadsheet
-import dialog_setup
 import data
+import dialog_setup
+import spreadsheet
 
 
 def main():

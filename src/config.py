@@ -1,5 +1,6 @@
-from pathlib import Path
 import tomllib
+from pathlib import Path
+
 import dialogs
 
 
