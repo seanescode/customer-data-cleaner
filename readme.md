@@ -1,7 +1,7 @@
 # Customer Data Cleaner
 This tool can be used to help a business quickly clean a customer or vendor list they have.
 
-![before and after.PNG](images/before%20and%20after.PNG)
+![before and after data cleaning.PNG](images/before%20and%20after%20data%20cleaning.PNG)
 
 # Cleaning
 - removes unnecessary white spaces throughout
