@@ -1,4 +1,3 @@
-import dialogs
 
 
 def clean_name(customer_name):
@@ -76,5 +75,4 @@ def clean_data(df, config):
         clean_column(df, config["columns"]["city"], clean_city)
         clean_column(df, config["columns"]["postcode"], clean_postcode)
     except KeyError as e:
-        dialogs.show_error_dialog("Error", f"Missing required column in config: {e}")
-        raise
+        raise KeyError(f"Missing required column in config: {e}") from e
