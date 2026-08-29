@@ -2,6 +2,7 @@ import dialogs
 
 
 def clean_name(customer_name):
+    customer_name = str(customer_name) # convert to string first so if user inputs a number for example won't crash
     customer_name = " ".join(customer_name.split())
     customer_name = customer_name.title()
     return customer_name
@@ -39,14 +40,16 @@ def clean_phone_number(phone_number):
 
 
 def clean_address(address):
+    address = str(address)
     address = address.title()
     address = " ".join(address.split())
     return address
 
 
 def clean_city(city):
+    city = str(city)
     city = city.title()
-    city = city.replace(" ", "")
+    city = " ".join(city.split())
     return city
 
 
@@ -54,6 +57,8 @@ def clean_postcode(postcode):
     postcode = str(postcode)
     postcode = postcode.replace(" ", "")
     postcode = postcode.upper()
+    if len(postcode) != 7:
+        return ""
     return postcode[:3] + " " + postcode[3:]
 
 
@@ -64,13 +69,12 @@ def clean_column(df, column, cleaning_function):
 
 def clean_data(df, config):
     try:
-        columns_config = config["columns"]
-        clean_column(df, columns_config["name"], clean_name)
-        clean_column(df, columns_config["email"], clean_email)
-        clean_column(df, columns_config["phone"], clean_phone_number)
-        clean_column(df, columns_config["address"], clean_address)
-        clean_column(df, columns_config["city"], clean_city)
-        clean_column(df, columns_config["postcode"], clean_postcode)
+        clean_column(df, config["columns"]["name"], clean_name)
+        clean_column(df, config["columns"]["email"], clean_email)
+        clean_column(df, config["columns"]["phone"], clean_phone_number)
+        clean_column(df, config["columns"]["address"], clean_address)
+        clean_column(df, config["columns"]["city"], clean_city)
+        clean_column(df, config["columns"]["postcode"], clean_postcode)
     except KeyError as e:
         dialogs.show_error_dialog("Error", f"Missing required column in config: {e}")
         raise
