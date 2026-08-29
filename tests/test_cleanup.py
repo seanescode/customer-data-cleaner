@@ -1,3 +1,4 @@
+import pandas as pd
 from cleanup import (
     clean_name,
     clean_email,
@@ -5,6 +6,8 @@ from cleanup import (
     clean_address,
     clean_city,
     clean_postcode,
+    clean_column,
+    clean_data
 )
 
 # test clean_name
@@ -147,3 +150,62 @@ def test_clean_postcode_shorter_than_expected():
     assert clean_postcode("D25") == ""
 def test_clean_postcode_longer_than_expected():
     assert clean_postcode("D25 TM70 123") == ""
+
+#test clean_column
+def test_clean_column_normal_case():
+    df = pd.DataFrame({"name": ["  john doe  ", "jane smith"]})
+    clean_column(df,"name", clean_name)
+    assert df.loc[0, "name"]=="John Doe"
+    assert df.loc[1, "name"]=="Jane Smith"
+
+def test_clean_column_handles_empty_cells():
+    df = pd.DataFrame({"name": ["john doe", None]})
+    clean_column(df, "name", clean_name)
+    assert df.loc[1, "name"] == ""
+
+def test_clean_column_column_not_in_dataframe():
+    df = pd.DataFrame({"name": ["john doe"]})
+    # Trying to clean an email column that doesn't exist shouldn't crash
+    clean_column(df, "email", clean_email)
+    assert "email" not in df.columns
+
+# test clean_data
+def test_clean_data_routes_columns_to_correct_cleaning_functions():
+    """Check that clean_data sends each column to the correct cleaning tool.
+
+    This test makes sure the configuration dictionary pairs everything up right.
+    It stops bugs if someone accidentally deletes a cleaning line or mixes up
+    the columns (like sending the address column to the email cleaner).
+    """
+    # 1. Setup a single row of dirty data for every column type
+    df = pd.DataFrame({
+        "Full Name": ["  mick jones  "],
+        "Email Address": [" MICK@mail.com "],
+        "Phone Number": ["0861234567"],
+        "Street Address": ["123  main  st"],
+        "Town/City": ["dublin"],
+        "Eircode": ["d25 tm70"]
+    })
+
+    # 2. Map the configuration keys to our dataframe columns
+    config = {
+        "columns": {
+            "name": "Full Name",
+            "email": "Email Address",
+            "phone": "Phone Number",
+            "address": "Street Address",
+            "city": "Town/City",
+            "postcode": "Eircode"
+        }
+    }
+
+    # 3. Run the orchestration pipeline
+    clean_data(df, config)
+
+    # 4. Assert that every column matched up with its proper cleaning partner
+    assert df.loc[0, "Full Name"] == "Mick Jones"
+    assert df.loc[0, "Email Address"] == "mick@mail.com"
+    assert df.loc[0, "Phone Number"] == "086 123 4567"
+    assert df.loc[0, "Street Address"] == "123 Main St"
+    assert df.loc[0, "Town/City"] == "Dublin"
+    assert df.loc[0, "Eircode"] == "D25 TM70"

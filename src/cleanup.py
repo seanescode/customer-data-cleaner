@@ -1,5 +1,3 @@
-
-
 def clean_name(customer_name):
     customer_name = str(customer_name) # convert to string first so if user inputs a number for example won't crash
     customer_name = " ".join(customer_name.split())

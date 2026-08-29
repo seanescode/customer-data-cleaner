@@ -34,18 +34,28 @@ This tool can be used to help a business quickly clean a customer or vendor list
 them on the click of a button meaning the user can update immediately rather than switching
 between screens.
 
-# Future Improvements
-- I could also include email domain checks (this is the part of the email after the @ symbol).
-This queries the Domain Name System (DNS) to confirm that the domain part of the email exists
-and is able to receive emails.
-- I could also include statistics to show how many records have been cleaned/updates done.
-- The email syntax check doesn't confirm if an email actually exists. It just checks the
-syntax is valid. If the user wants to check if an email exists they could use
-an email verification service. These are usually paid services after free limits are used.   
-
 # Limitations
-- This tool is currently only built for Windows users using Excel.
-- This tool is built for Irish users - for example, the post codes are hardcoded to input a
-space after the third character (though this could be easily updated if and when needed for other countries)
-- No fuzzy matching - currently catches exact matches only would be useful to also catch
-entries that have typos - would be a good future update. 
+
+* This tool is currently designed for Windows users with Microsoft Excel installed. The application uses Windows-specific Excel automation, meaning it is not currently compatible with macOS, Linux or other spreadsheet applications.
+* The tool is currently designed primarily for Irish users. For example, Eircode formatting is hardcoded to insert a space after the third character, although this could be adapted to support postcode formats used in other countries.
+* Duplicate detection does not currently use fuzzy matching, so customers with spelling mistakes or variations in their details may not always be identified. However, the tool uses multiple customer fields to identify potential duplicates rather than relying on a single piece of information. It checks customer names and cross-checks them against email addresses, phone numbers, street addresses and postcodes, making it possible to identify duplicate records even when the same customer details appear across different fields.
+* The email checker does not verify whether an email mailbox exists or is actively monitored. However, it performs email syntax validation, allowing the tool to automatically identify incorrectly formatted email addresses and common data entry errors that could otherwise affect the quality and usability of customer data.
+
+# Future Improvements
+
+* Add email domain checks. This would check the part of the email address after the `@` symbol by querying the Domain Name System (DNS) to confirm that the domain exists and can receive emails.
+* Add statistics showing how many records were cleaned and how many updates were made.
+* The current email syntax check does not confirm whether an email address actually exists; it only checks whether the syntax is valid. Users who need to verify whether an email address exists could use an email verification service, although these are typically paid services once free usage limits have been reached.
+* Add fuzzy matching to help identify potential duplicate records containing small differences or typos.
+* Make the application cross-platform. The current version uses Windows-specific automation to interact directly with Microsoft Excel. A future version could instead use a file-based workflow, where users provide an `.xlsx` or `.csv` file, the application processes the data, and then saves a cleaned version. This would make the core functionality usable on Windows, macOS and Linux, with the resulting files compatible with applications such as Microsoft Excel, LibreOffice and Google Sheets.
+
+
+# What I Learned
+
+One of the main things I learned while building this project was the importance of considering platform compatibility when choosing technologies and designing an application's architecture.
+
+The application was originally designed to automate Microsoft Excel directly using Windows-specific tools. This was suitable for the original goal of building a desktop tool for Windows and Excel users, but it also meant that the spreadsheet automation layer became dependent on a specific operating system and application.
+
+At the same time, the core functionality of the project — including data cleaning, validation and duplicate detection — is largely platform-independent because it works with Pandas DataFrames rather than directly with Excel.
+
+This highlighted the importance of separating core business logic from external integrations. If I revisit this project in the future, I would consider moving towards a file-based workflow where users import an `.xlsx` or `.csv` file and export a cleaned version. This would make it possible to support users on Windows, macOS and Linux without needing to automate a specific spreadsheet application.
