@@ -17,7 +17,7 @@ def load_config():
         raise
 
 
-def get_spreadsheet(config):
+def get_spreadsheet_path_and_worksheet(config):
     try:
         return config["spreadsheet"]["file_path"], config["spreadsheet"]["worksheet_name"]
     except KeyError as e:

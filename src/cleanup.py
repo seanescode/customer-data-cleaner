@@ -14,7 +14,6 @@ def clean_email(email):
 
 def clean_phone_number(phone_number):
     phone_number = str(phone_number)
-
     phone_number = phone_number.replace(" ", "")
     phone_number = phone_number.replace("-", "")
 

@@ -3,6 +3,7 @@ import pywintypes
 from email_validator import EmailNotValidError, validate_email
 
 import spreadsheet
+from dialogs import show_error_dialog
 
 
 # Excel AutoFilter constants
@@ -12,10 +13,20 @@ SORT_ASCENDING = 1
 HEADER_PRESENT = 1
 SORT_TOP_TO_BOTTOM = 1
 
+# BREAK filter_to_invalid_emails FUNCTION INTO SMALLER FUNCTIONS
+# STEPS:
+# remove filters
+# - read dataframe latest
+# - check if an email is cell is blank (skip validating for it) (actually not sure i'd need this if i make cells empty string) its adding to invalid email list too
+# - validate email (if not valid add to invalid emails list)
+# - if no invalid emails,
+# - remove filters and return
+# - get column of the email header so can filter the column
+# - apply filter to invalid emails
 
-def filter_to_invalid_emails(file_loc, ws, email_column, no_records_found_msg):
+def filter_to_invalid_emails(file_path, ws, email_column, no_records_found_msg):
     try:
-        df = pandas.read_excel(file_loc)
+        df = pandas.read_excel(file_path)
         spreadsheet.remove_filters(ws)
 
         invalid_emails = []
@@ -59,15 +70,15 @@ def filter_to_invalid_emails(file_loc, ws, email_column, no_records_found_msg):
         )
 
     except FileNotFoundError:
-        no_records_found_msg("Spreadsheet not found. Please check the file location.")
+        show_error_dialog("Spreadsheet not found. Please check the file location.")
     except (PermissionError, ValueError, IsADirectoryError) as e:
-        no_records_found_msg(f"Error reading Excel file: {e}")
+        show_error_dialog(f"Error reading Excel file: {e}")
     except KeyError:
-        no_records_found_msg(f"Column '{email_column}' not found in spreadsheet.")
+        show_error_dialog(f"Column '{email_column}' not found in spreadsheet.")
     except pywintypes.com_error:
-        no_records_found_msg("Excel connection error. Please ensure Excel is still open.")
+        show_error_dialog("Excel connection error. Please ensure Excel is still open.")
     except Exception as e:
-        no_records_found_msg(f"Unexpected error: {e}")
+        show_error_dialog(f"Unexpected error: {e}")
 
 
 def get_duplicate_customers(df):
@@ -130,12 +141,12 @@ def filter_duplicate_customers(file_loc, ws, name_column, no_records_found_msg):
         )
 
     except FileNotFoundError:
-        no_records_found_msg("Spreadsheet not found. Please check the file location.")
+        show_error_dialog("Spreadsheet not found. Please check the file location.")
     except (PermissionError, ValueError, IsADirectoryError) as e:
-        no_records_found_msg(f"Error reading Excel file: {e}")
+        show_error_dialog(f"Error reading Excel file: {e}")
     except KeyError as e:
-        no_records_found_msg(f"Column not found: {e}")
+        show_error_dialog(f"Column not found: {e}")
     except pywintypes.com_error:
-        no_records_found_msg("Excel connection error. Please ensure Excel is still open.")
+        show_error_dialog("Excel connection error. Please ensure Excel is still open.")
     except Exception as e:
-        no_records_found_msg(f"Unexpected error: {e}")
+        show_error_dialog(f"Unexpected error: {e}")

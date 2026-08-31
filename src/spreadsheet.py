@@ -3,6 +3,8 @@ import win32com.client as win32
 
 import dialogs
 
+import pandas
+
 
 def launch_spreadsheet_app():
     try:
@@ -30,6 +32,17 @@ def remove_filters(ws):
             ws.ShowAllData()
     except pywintypes.com_error as e:
         dialogs.show_error_dialog("Error", f"Excel connection error: {e}")
+
+
+def get_dataframe(file_path):
+    try:
+        return pandas.read_excel(file_path)
+    except FileNotFoundError:
+        dialogs.show_error_dialog("Error", f"Spreadsheet not found: {file_path}")
+        raise
+    except (PermissionError, ValueError, IsADirectoryError) as e:
+        dialogs.show_error_dialog("Error", f"Error reading Excel file: {e}")
+        raise
 
 
 def update_spreadsheet_from_dataframe(df, ws):
