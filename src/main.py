@@ -1,5 +1,6 @@
 import cleanup
 import config
+import dataframe
 import dialog_setup
 import spreadsheet
 
@@ -7,7 +8,7 @@ import spreadsheet
 def main():
     cfg = config.load_config()
     file_path, worksheet_name = config.get_spreadsheet_path_and_worksheet(cfg)
-    df = spreadsheet.get_dataframe(file_path)
+    df = dataframe.get_dataframe(file_path)
     cleanup.clean_data(df, cfg)
     excel = spreadsheet.launch_spreadsheet_app()
     wb, ws = spreadsheet.open_spreadsheet(excel, file_path, worksheet_name)

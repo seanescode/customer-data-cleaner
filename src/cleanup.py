@@ -1,3 +1,7 @@
+from error_handler import handle_errors
+from exceptions import DataCleaningError, ConfigKeyError
+
+
 def clean_name(customer_name):
     customer_name = str(customer_name) # convert to string first so if user inputs a number for example won't crash
     customer_name = " ".join(customer_name.split())
@@ -63,6 +67,7 @@ def clean_column(df, column, cleaning_function):
         df[column] = df[column].fillna("").apply(cleaning_function)
 
 
+@handle_errors
 def clean_data(df, config):
     try:
         clean_column(df, config["columns"]["name"], clean_name)
@@ -72,4 +77,6 @@ def clean_data(df, config):
         clean_column(df, config["columns"]["city"], clean_city)
         clean_column(df, config["columns"]["postcode"], clean_postcode)
     except KeyError as e:
-        raise KeyError(f"Missing required column in config: {e}") from e
+        raise ConfigKeyError(str(e))
+    except Exception as e:
+        raise DataCleaningError(str(e))

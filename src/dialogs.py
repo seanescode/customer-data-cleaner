@@ -5,6 +5,11 @@ import win32con
 import win32gui
 
 
+PANEL_WIDTH = 310
+PANEL_HEIGHT = 200
+PANEL_RIGHT_PADDING = 35
+
+
 def create_dialog_root():
     root = Tk()
     root.withdraw()
@@ -14,7 +19,9 @@ def create_dialog_root():
 def show_error_dialog(title, message):
     error_root = Tk()
     error_root.withdraw()
+
     tkinter.messagebox.showerror(title, message)
+
     error_root.destroy()
 
 
@@ -25,6 +32,20 @@ def show_temporary_message(root, text, duration_ms=2500):
     message.title("")
     message.resizable(False, False)
 
+    _create_temporary_message_content(message, text)
+    _centre_window(message)
+
+    message.deiconify()
+    message.lift()
+    message.attributes("-topmost", True)
+
+    _configure_temporary_message_close(
+        message,
+        duration_ms
+    )
+
+
+def _create_temporary_message_content(message, text):
     frame = Frame(
         message,
         padx=25,
@@ -50,29 +71,25 @@ def show_temporary_message(root, text, duration_ms=2500):
         foreground="#666666"
     ).pack()
 
-    # Let Tkinter calculate the complete size of the dialog.
-    message.update_idletasks()
 
-    width = message.winfo_reqwidth()
-    height = message.winfo_reqheight()
+def _centre_window(window):
+    window.update_idletasks()
 
-    # Centre on the screen.
-    screen_width = message.winfo_screenwidth()
-    screen_height = message.winfo_screenheight()
+    width = window.winfo_reqwidth()
+    height = window.winfo_reqheight()
+
+    screen_width = window.winfo_screenwidth()
+    screen_height = window.winfo_screenheight()
 
     x = (screen_width - width) // 2
     y = (screen_height - height) // 2
 
-    message.geometry(
+    window.geometry(
         f"{width}x{height}+{x}+{y}"
     )
 
-    # Show only after the final position has been calculated.
-    message.deiconify()
-    message.lift()
-    message.attributes("-topmost", True)
 
-    # Each popup has its own independent timer.
+def _configure_temporary_message_close(message, duration_ms):
     closed = False
 
     def close_message():
@@ -86,15 +103,18 @@ def show_temporary_message(root, text, duration_ms=2500):
         try:
             if message.winfo_exists():
                 message.destroy()
-        except:
+        except Exception:
             pass
 
     def remove_topmost():
         if not closed:
             try:
                 if message.winfo_exists():
-                    message.attributes("-topmost", False)
-            except:
+                    message.attributes(
+                        "-topmost",
+                        False
+                    )
+            except Exception:
                 pass
 
     message.after(200, remove_topmost)
@@ -107,14 +127,39 @@ def show_temporary_message(root, text, duration_ms=2500):
 
 
 def show_cleanup_panel(
+    root,
+    excel_hwnd,
+    excel_app,
+    workbook,
+    review_duplicate_customers_button=None,
+    review_invalid_emails_button=None,
+    remove_filters_button=None
+):
+    panel = _create_cleanup_panel(root)
+
+    _enable_minimize_button(panel)
+
+    _configure_panel_close_behavior(panel)
+
+    _create_cleanup_panel_content(
+        panel,
+        review_duplicate_customers_button,
+        review_invalid_emails_button,
+        remove_filters_button
+    )
+
+    _monitor_and_position_panel(
         root,
+        panel,
         excel_hwnd,
         excel_app,
-        workbook,
-        review_duplicate_customers_button=None,
-        review_invalid_emails_button=None,
-        remove_filters_button=None
-):
+        workbook
+    )
+
+    return panel
+
+
+def _create_cleanup_panel(root):
     panel = Toplevel(root)
 
     panel.title("Data Cleanup Panel")
@@ -122,8 +167,12 @@ def show_cleanup_panel(
     panel.resizable(False, False)
     panel.update_idletasks()
 
-    # Keep the panel fixed-size but retain the minimise button.
+    return panel
+
+
+def _enable_minimize_button(panel):
     panel_hwnd = panel.winfo_id()
+
     panel_style = win32gui.GetWindowLong(
         panel_hwnd,
         win32con.GWL_STYLE
@@ -135,6 +184,13 @@ def show_cleanup_panel(
         panel_style | win32con.WS_MINIMIZEBOX
     )
 
+    window_flags = (
+        win32con.SWP_NOMOVE
+        | win32con.SWP_NOSIZE
+        | win32con.SWP_NOZORDER
+        | win32con.SWP_FRAMECHANGED
+    )
+
     win32gui.SetWindowPos(
         panel_hwnd,
         0,
@@ -142,27 +198,22 @@ def show_cleanup_panel(
         0,
         0,
         0,
-        win32con.SWP_NOMOVE
-        | win32con.SWP_NOSIZE
-        | win32con.SWP_NOZORDER
-        | win32con.SWP_FRAMECHANGED
+        window_flags
     )
 
-    panel_width = 310
-    panel_height = 200
-    right_padding = 35
 
-    excel_was_minimized = False
-
+def _configure_panel_close_behavior(panel):
     def show_close_message():
-
         panel.update_idletasks()
 
         _, panel_y, panel_right, _ = (
-            win32gui.GetWindowRect(panel.winfo_id())
+            win32gui.GetWindowRect(
+                panel.winfo_id()
+            )
         )
 
         message = Toplevel(panel)
+
         message.withdraw()
         message.overrideredirect(True)
 
@@ -209,11 +260,20 @@ def show_cleanup_panel(
         show_close_message
     )
 
+
+def _create_cleanup_panel_content(
+    panel,
+    review_duplicate_customers_button,
+    review_invalid_emails_button,
+    remove_filters_button
+):
     Label(
         panel,
         text="Steps to be done in order:",
         font=("Arial", 13, "bold")
-    ).pack(pady=(10, 2))
+    ).pack(
+        pady=(10, 2)
+    )
 
     Label(
         panel,
@@ -236,126 +296,144 @@ def show_cleanup_panel(
         text="Review Duplicate Customers",
         width=30,
         command=review_duplicate_customers_button
-    ).pack(pady=2)
+    ).pack(
+        pady=2
+    )
 
     Button(
         panel,
         text="Review Invalid Syntax Emails",
         width=30,
         command=review_invalid_emails_button
-    ).pack(pady=2)
+    ).pack(
+        pady=2
+    )
 
     Button(
         panel,
         text="Remove filters",
         width=30,
         command=remove_filters_button
-    ).pack(pady=(2, 0))
+    ).pack(
+        pady=(2, 0)
+    )
+
+
+def _close_panel_and_root(panel, root):
+    panel.destroy()
+    root.destroy()
+
+
+def _monitor_and_position_panel(
+    root,
+    panel,
+    excel_hwnd,
+    excel_app,
+    workbook
+):
+    excel_was_minimized = False
 
     def position_panel():
-
         nonlocal excel_was_minimized
 
-        # Check if Excel is still running using COM object
-        try:
-            # Try to access Excel application - this will fail if Excel is closed
-            excel_app.Visible
-        except Exception:
-            # Excel has been closed - destroy panel and root to exit program
-            panel.destroy()
-            root.destroy()
+        if not _excel_is_running(excel_app):
+            _close_panel_and_root(panel, root)
             return
 
-        # Check if the workbook is still open
-        try:
-            workbook.Name
-        except Exception:
-            # Workbook has been closed - destroy panel and root to exit program
-            panel.destroy()
-            root.destroy()
+        if not _workbook_is_open(workbook):
+            _close_panel_and_root(panel, root)
             return
 
-        # Excel has been closed (window handle check as backup)
-        try:
-            if not win32gui.IsWindow(excel_hwnd):
-                panel.destroy()
-                root.destroy()
-                return
-        except Exception:
-            # Window handle became invalid
-            panel.destroy()
-            root.destroy()
+        if not _excel_window_is_valid(excel_hwnd):
+            _close_panel_and_root(panel, root)
             return
 
-        # Excel is minimised.
         try:
-            if win32gui.IsIconic(excel_hwnd):
-                if not excel_was_minimized:
-                    excel_was_minimized = True
-
-                    if panel.state() != "iconic":
-                        panel.iconify()
+            excel_is_minimized = win32gui.IsIconic(excel_hwnd)
         except Exception:
-            # Window handle became invalid
-            panel.destroy()
-            root.destroy()
+            _close_panel_and_root(panel, root)
             return
 
-        # Excel is visible.
-        try:
-            if not win32gui.IsIconic(excel_hwnd):
-                if excel_was_minimized:
-                    excel_was_minimized = False
+        if excel_is_minimized:
+            if not excel_was_minimized:
+                excel_was_minimized = True
 
-                    # Excel has just been restored.
-                    if panel.state() == "iconic":
-                        panel.deiconify()
-
-                # Keep the panel positioned beside Excel.
                 if panel.state() != "iconic":
+                    panel.iconify()
 
-                    try:
-                        left, top, right, bottom = (
-                            win32gui.GetWindowRect(excel_hwnd)
-                        )
+        else:
+            if excel_was_minimized:
+                excel_was_minimized = False
 
-                        x = (
-                                right
-                                - panel_width
-                                - right_padding
-                        )
+                if panel.state() == "iconic":
+                    panel.deiconify()
 
-                        y = (
-                                top
-                                + ((bottom - top) // 2)
-                                - (panel_height // 2)
-                        )
-
-                        panel.geometry(
-                            f"{panel_width}x{panel_height}"
-                            f"+{x}+{y}"
-                        )
-                    except Exception:
-                        # Excel window handle became invalid during positioning
-                        panel.destroy()
-                        root.destroy()
-                        return
-        except Exception:
-            # Window handle became invalid
-            panel.destroy()
-            root.destroy()
-            return
+            if panel.state() != "iconic":
+                if not _position_panel_beside_excel(
+                    panel,
+                    excel_hwnd
+                ):
+                    _close_panel_and_root(panel, root)
+                    return
 
         panel.after(
             100,
             position_panel
         )
 
-    # Show immediately.
     panel.deiconify()
     panel.lift()
 
-    # Start positioning/monitoring Excel.
     position_panel()
 
-    return panel
+
+def _excel_is_running(excel_app):
+    try:
+        excel_app.Visible
+        return True
+    except Exception:
+        return False
+
+
+def _workbook_is_open(workbook):
+    try:
+        workbook.Name
+        return True
+    except Exception:
+        return False
+
+
+def _excel_window_is_valid(excel_hwnd):
+    try:
+        return win32gui.IsWindow(excel_hwnd)
+    except Exception:
+        return False
+
+
+def _position_panel_beside_excel(panel, excel_hwnd):
+    try:
+        left, top, right, bottom = (
+            win32gui.GetWindowRect(excel_hwnd)
+        )
+
+        x = (
+            right
+            - PANEL_WIDTH
+            - PANEL_RIGHT_PADDING
+        )
+
+        y = (
+            top
+            + ((bottom - top) // 2)
+            - (PANEL_HEIGHT // 2)
+        )
+
+        panel.geometry(
+            f"{PANEL_WIDTH}x{PANEL_HEIGHT}"
+            f"+{x}+{y}"
+        )
+
+        return True
+
+    except Exception:
+        return False

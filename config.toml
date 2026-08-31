@@ -3,6 +3,7 @@ file_path = "C:\\Users\\seane\\Documents\\customer_data_clean_up\\client_data_cl
 worksheet_name = "Customer Records"
 
 [columns]
+customer_id = "customer_id"
 name = "name"
 email = "email"
 phone = "phone"
