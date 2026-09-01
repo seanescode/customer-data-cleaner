@@ -1,5 +1,6 @@
 import dialogs
 from functools import wraps
+from typing import Any, Callable
 
 from exceptions import (
     ConfigNotFoundError,
@@ -17,10 +18,10 @@ from exceptions import (
 )
 
 
-def handle_errors(func):
-    """Decorator to handle custom exceptions and show appropriate dialog messages"""
+def handle_errors(func: Callable[..., Any]) -> Callable[..., Any]:
+    """Decorator to handle custom exceptions and show appropriate dialog messages."""
     @wraps(func)
-    def wrapper(*args, **kwargs):
+    def wrapper(*args: Any, **kwargs: Any) -> Any:
         try:
             return func(*args, **kwargs)
         except ConfigNotFoundError as e:
@@ -49,4 +50,5 @@ def handle_errors(func):
             dialogs.show_error_dialog("Error", str(e))
         except Exception as e:
             dialogs.show_error_dialog("Error", f"Unexpected error: {e}")
+
     return wrapper

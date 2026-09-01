@@ -6,7 +6,7 @@ from exceptions import ConfigNotFoundError, ConfigParseError, ConfigKeyError
 
 
 @handle_errors
-def load_config():
+def load_config() -> dict:
     try:
         config_path = Path(__file__).parent.parent / "config.toml"
         with open(config_path, "rb") as f:
@@ -18,8 +18,12 @@ def load_config():
 
 
 @handle_errors
-def get_spreadsheet_path_and_worksheet(config):
+def get_spreadsheet_paths_and_worksheet(config: dict) -> tuple[str, str, str]:
     try:
-        return config["spreadsheet"]["file_path"], config["spreadsheet"]["worksheet_name"]
+        input_file_path = config["spreadsheet"]["input_file_path"]
+        output_file_path = config["spreadsheet"]["output_file_path"]
+        output_worksheet_name = config["spreadsheet"]["output_worksheet_name"]
+
+        return input_file_path, output_file_path, output_worksheet_name
     except KeyError as e:
         raise ConfigKeyError(str(e))

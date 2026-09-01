@@ -11,7 +11,7 @@ from exceptions import (
 
 
 @handle_errors
-def get_dataframe(file_path):
+def get_dataframe(file_path: str) -> pandas.DataFrame:
     try:
         return pandas.read_excel(file_path)
     except FileNotFoundError:
@@ -21,7 +21,7 @@ def get_dataframe(file_path):
 
 
 @handle_errors
-def get_duplicate_customers(df):
+def get_duplicate_customers(df: pandas.DataFrame) -> pandas.DataFrame:
     try:
         required_columns = ['name', 'email', 'phone', 'address', 'postcode']
         missing_columns = [col for col in required_columns if col not in df.columns]
@@ -44,7 +44,7 @@ def get_duplicate_customers(df):
 
 
 @handle_errors
-def get_invalid_emails(df, email_column):
+def get_invalid_emails(df: pandas.DataFrame, email_column: str) -> list[str]:
     try:
         invalid_emails = []
         for email in df[email_column]:

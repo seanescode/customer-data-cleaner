@@ -1,6 +1,7 @@
 [spreadsheet]
-file_path = "C:\\Users\\seane\\Documents\\customer_data_clean_up\\client_data_cleanup_project.xlsx"
-worksheet_name = "Customer Records"
+input_file_path = "C:\\Users\\seane\\Documents\\customer_data_clean_up\\client_data_cleanup_project.xlsx"
+output_file_path = "C:\\Users\\seane\\Documents\\customer_data_clean_up\\client_data_cleanup_project_cleaned.xlsx"
+output_worksheet_name = "Cleaned Data"
 
 [columns]
 customer_id = "customer_id"

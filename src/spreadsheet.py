@@ -1,3 +1,5 @@
+import os.path
+
 import pywintypes
 import win32com.client as win32
 
@@ -10,14 +12,14 @@ HEADER_PRESENT = 1
 SORT_TOP_TO_BOTTOM = 1
 
 
-def get_column_number_of_heading(ws, column_name):
+def get_column_number_of_heading(ws: object, column_name: str) -> int | None:
     for cell in ws.UsedRange.Rows(1).Cells:
         if cell.Value == column_name:
             return cell.Column
     return None
 
 
-def apply_filter(ws, column_number: int, filter_values: list[str]):
+def apply_filter(ws: object, column_number: int, filter_values: list[str]) -> None:
 
     used = ws.UsedRange
     used.AutoFilter(
@@ -28,7 +30,7 @@ def apply_filter(ws, column_number: int, filter_values: list[str]):
     )
 
 
-def sort_rows(ws, column_header):
+def sort_rows(ws: object, column_header: str) -> None:
     used = ws.UsedRange
     for cell in used.Rows(1).Cells:
 
@@ -43,7 +45,7 @@ def sort_rows(ws, column_header):
 
 
 @handle_errors
-def launch_spreadsheet_app():
+def launch_spreadsheet_app() -> object:
     try:
         excel = win32.Dispatch("Excel.Application")
         excel.Visible = True
@@ -53,9 +55,9 @@ def launch_spreadsheet_app():
 
 
 @handle_errors
-def open_spreadsheet(excel, file_loc, worksheet_name):
+def open_spreadsheet(excel: object, file_path: str, worksheet_name: str) -> tuple[object, object]:
     try:
-        wb = excel.Workbooks.Open(file_loc)
+        wb = excel.Workbooks.Open(file_path)
         ws = wb.Worksheets(worksheet_name)
         return wb, ws
     except pywintypes.com_error as e:
@@ -63,32 +65,28 @@ def open_spreadsheet(excel, file_loc, worksheet_name):
 
 
 @handle_errors
-def remove_filters(ws):
+def remove_filters(ws: object) -> None:
     try:
         if ws.FilterMode:
             ws.ShowAllData()
     except pywintypes.com_error as e:
         raise ExcelConnectionError(f"Excel connection error: {e}")
 
+def input_values_to_spreadsheet(df:object, ws: object) -> None:
+    headers = df.columns.tolist()
+    values = df.where(df.notna(), None).values.tolist()
+    ws.Range(
+        ws.Cells(1, 1),
+        ws.Cells(1, len(headers))
+    ).Value = headers
 
-@handle_errors
-def update_spreadsheet_from_dataframe(df, ws):
-    try:
-        values = df.where(df.notna(), None).values.tolist()
-        remove_filters(ws)
+    ws.Range(
+        ws.Cells(2, 1),
+        ws.Cells(len(values) + 1, len(values[0]))
+    ).Value = values
 
-        target = ws.Range(
-            ws.Cells(2, 1),
-            ws.Cells(len(values) + 1, len(values[0]))
-        )
+def auto_fit_columns_and_rows(ws: object) -> None:
+    used_range = ws.UsedRange
+    used_range.EntireColumn.AutoFit()
+    used_range.EntireRow.AutoFit()
 
-        target.Value = values
-
-    except IndexError:
-        raise DataCleaningError("DataFrame is empty or has invalid structure")
-    except ValueError as e:
-        raise DataCleaningError(f"Invalid data structure: {e}")
-    except pywintypes.com_error as e:
-        raise ExcelConnectionError(f"Excel connection error: {e}")
-    except Exception as e:
-        raise DataCleaningError(f"Unexpected error: {e}")

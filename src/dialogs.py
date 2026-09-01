@@ -10,13 +10,15 @@ PANEL_HEIGHT = 200
 PANEL_RIGHT_PADDING = 35
 
 
-def create_dialog_root():
+def create_dialog_root() -> Tk:
     root = Tk()
     root.withdraw()
     return root
 
 
-def show_error_dialog(title, message):
+def show_error_dialog(title: str,
+                      message: str
+                      ) -> None:
     error_root = Tk()
     error_root.withdraw()
 
@@ -25,7 +27,10 @@ def show_error_dialog(title, message):
     error_root.destroy()
 
 
-def show_temporary_message(root, text, duration_ms=2500):
+def show_temporary_message(root: Tk,
+                           text: str,
+                           duration_ms: int =2500
+                           ) -> None:
     message = Toplevel(root)
 
     message.withdraw()
@@ -45,7 +50,9 @@ def show_temporary_message(root, text, duration_ms=2500):
     )
 
 
-def _create_temporary_message_content(message, text):
+def _create_temporary_message_content(message: Toplevel,
+                                      text: str
+                                      ) -> None:
     frame = Frame(
         message,
         padx=25,
@@ -72,7 +79,7 @@ def _create_temporary_message_content(message, text):
     ).pack()
 
 
-def _centre_window(window):
+def _centre_window(window: Toplevel) -> None:
     window.update_idletasks()
 
     width = window.winfo_reqwidth()
@@ -89,7 +96,8 @@ def _centre_window(window):
     )
 
 
-def _configure_temporary_message_close(message, duration_ms):
+def _configure_temporary_message_close(message: Toplevel,
+                                       duration_ms: int) -> None:
     closed = False
 
     def close_message():

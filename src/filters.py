@@ -1,5 +1,5 @@
 import pywintypes
-
+from typing import Callable
 import spreadsheet
 import dataframe
 
@@ -15,7 +15,10 @@ from exceptions import (
 
 
 @handle_errors
-def filter_to_invalid_emails(file_path, ws, email_column, no_records_found_msg):
+def filter_to_invalid_emails(file_path: str,
+                             ws: object,
+                             email_column: str,
+                             no_records_found_msg: Callable[[str], None]) -> None:
     try:
         spreadsheet.remove_filters(ws)
         df = dataframe.get_dataframe(file_path)
@@ -41,7 +44,11 @@ def filter_to_invalid_emails(file_path, ws, email_column, no_records_found_msg):
 
 
 @handle_errors
-def filter_duplicate_customers(file_path, ws, name_column, customer_id_column, no_records_found_msg):
+def filter_duplicate_customers(file_path: str,
+                               ws: object,
+                               name_column: str,
+                               customer_id_column: str,
+                               no_records_found_msg: Callable[[str], None]) -> None:
     try:
         spreadsheet.remove_filters(ws)
         df = dataframe.get_dataframe(file_path)

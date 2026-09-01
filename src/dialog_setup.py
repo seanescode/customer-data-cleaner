@@ -7,7 +7,12 @@ from exceptions import DialogSetupError
 
 
 @handle_errors
-def setup_and_run_dialog(excel, wb, file_loc, ws, config):
+def setup_and_run_dialog(excel: object,
+                         wb: object,
+                         file_loc: str,
+                         ws: object,
+                         config: dict
+                         ) -> None:
     try:
         root = dialogs.create_dialog_root()
 
