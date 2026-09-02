@@ -64,11 +64,6 @@ def clean_postcode(postcode: Any) -> str:
     return postcode[:3] + " " + postcode[3:]
 
 
-# def clean_column(df: Any, column: str, cleaning_function: Callable[[Any], str]) -> None:
-#     if column in df.columns:
-#         df[column] = df[column].fillna("").apply(cleaning_function)
-
-
 def clean_column(df, column, cleaning_function) -> int:
     if column not in df.columns:
         return 0

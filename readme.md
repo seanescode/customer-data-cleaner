@@ -23,6 +23,9 @@ This tool can be used to help a business quickly clean a customer or vendor list
 - User has control - duplicates entries and bad syntax emails can be manually reviewed before deletion.
 
 ![example output from duplicates and invalid emails.PNG](images/example%20output%20from%20duplicates%20and%20invalid%20emails.PNG)
+- A statistics panel shows up after the data has been cleaned so user can see exactly what was cleaned. 
+
+![statistics on opening.PNG](images/statistics%20on%20opening.PNG)
 - Error handling is built in. For example, if the list gets moved to another folder, the tool will show an error message.
 - Duplicates entries have multiple checkpoints to ensure all duplicates are caught.
   - if the following match across two rows it shows as a duplicate:
@@ -33,6 +36,7 @@ This tool can be used to help a business quickly clean a customer or vendor list
 - Rather than doing a seperate report of duplicates and bad syntax emails this automation filters to
 them on the click of a button meaning the user can update immediately rather than switching
 between screens.
+- The original file is not changed. A new file with the cleaned data is created. This serves as an extra saftey check to reduce the risk of data loss.
 
 # Limitations
 
