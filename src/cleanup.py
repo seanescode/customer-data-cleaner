@@ -1,3 +1,4 @@
+import logging
 from typing import Any, Callable
 
 from error_handler import handle_errors
@@ -23,22 +24,25 @@ def clean_phone_number(phone_number: Any) -> str:
     phone_number = phone_number.replace(" ", "")
     phone_number = phone_number.replace("-", "")
 
-    # remove invalid short phone numbers
+    # Remove invalid short phone numbers.
     if len(phone_number) < 5:
         return ""
 
-    # remove Irish prefix code
+    # Remove Irish prefix code.
+    if phone_number.startswith("353"):
+        phone_number = phone_number[3:]
+
     if phone_number.startswith("+353"):
         phone_number = phone_number[4:]
 
-    # clean mobile numbers (Excel takes out the zero so have to add back)
+    # Clean mobile numbers (Excel takes out the zero so have to add back).
     if phone_number.startswith(("83", "85", "86", "87", "89")) and len(phone_number) == 9:
         phone_number = "0" + phone_number
 
     if phone_number.startswith(("083", "085", "086", "087", "089")) and len(phone_number) == 10:
         return phone_number[0:3] + " " + phone_number[3:6] + " " + phone_number[6:10]
 
-    return ""
+    return phone_number
 
 
 def clean_address(address: Any) -> str:
@@ -56,45 +60,47 @@ def clean_city(city: Any) -> str:
 
 
 def clean_postcode(postcode: Any) -> str:
+    if not postcode:
+        return ""
+
     postcode = str(postcode)
     postcode = postcode.replace(" ", "")
     postcode = postcode.upper()
-    if len(postcode) != 7:
-        return ""
     return postcode[:3] + " " + postcode[3:]
 
 
-def clean_column(df, column, cleaning_function) -> int:
-    if column not in df.columns:
-        return 0
-    original_values = df[column].fillna("")
-    cleaned_values = original_values.apply(cleaning_function)
-    changes = (original_values != cleaned_values).sum()
-    df[column] = cleaned_values
-    return changes
+def clean_column(df: Any, column: str, cleaning_function: Callable[[Any], str]) -> None:
+    if column in df.columns:
+        df[column] = df[column].fillna("").apply(cleaning_function)
+
 
 @handle_errors
 def clean_data(df: Any, config: dict) -> None:
+    log = logging.getLogger("customer_data_cleaner")
     try:
-        name_updates = clean_column(df, config["columns"]["name"], clean_name)
-        email_updates= clean_column(df, config["columns"]["email"], clean_email)
-        phone_updates = clean_column(df, config["columns"]["phone"], clean_phone_number)
-        address_updates = clean_column(df, config["columns"]["address"], clean_address)
-        city_updates = clean_column(df, config["columns"]["city"], clean_city)
-        postcode_updates= clean_column(df, config["columns"]["postcode"], clean_postcode)
+        log.info("Cleaning name column")
+        clean_column(df, config["columns"]["name"], clean_name)
 
-        total_updates = name_updates + email_updates + phone_updates + address_updates + city_updates + postcode_updates
-        print("CLEANING STATISTICS:")
-        print("name updates: " + str(name_updates))
-        print("email updates: " + str(email_updates))
-        print("phone updates: " + str(phone_updates))
-        print("address updates: " + str(address_updates))
-        print("city updates: " + str(city_updates))
-        print("postcode updates: " + str(postcode_updates))
-        print("total updates: " + str(total_updates))
+        log.info("Cleaning email column")
+        clean_column(df, config["columns"]["email"], clean_email)
 
+        log.info("Cleaning phone number column")
+        clean_column(df, config["columns"]["phone"], clean_phone_number)
+
+        log.info("Cleaning address column")
+        clean_column(df, config["columns"]["address"], clean_address)
+
+        log.info("Cleaning city column")
+        clean_column(df, config["columns"]["city"], clean_city)
+
+        log.info("Cleaning postcode column")
+        clean_column(df, config["columns"]["postcode"], clean_postcode)
+
+        log.info("Data cleaning completed successfully")
 
     except KeyError as e:
+        log.error(f"Configuration key error during cleaning: {e}")
         raise ConfigKeyError(str(e))
     except Exception as e:
+        log.error(f"Error during data cleaning: {e}")
         raise DataCleaningError(str(e))

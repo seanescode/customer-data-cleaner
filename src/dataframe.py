@@ -6,7 +6,7 @@ from exceptions import (
     SpreadsheetNotFoundError,
     SpreadsheetAccessError,
     DuplicateDetectionError,
-    ColumnNotFoundError
+    ColumnNotFoundError,
 )
 
 
@@ -34,7 +34,7 @@ def get_duplicate_customers(df: pandas.DataFrame) -> pandas.DataFrame:
         dup_address = df.duplicated(subset=['name', 'address'], keep=False)
         dup_postcode = df.duplicated(subset=['name', 'postcode'], keep=False)
 
-        # Combine all duplicate variables using "OR" logic (|) to show all them
+        # Combine all duplicate checks using OR logic
         all_duplicates = df[dup_email | dup_phone | dup_address | dup_postcode]
         return all_duplicates
     except ColumnNotFoundError:

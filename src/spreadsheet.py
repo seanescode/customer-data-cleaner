@@ -1,16 +1,15 @@
-import os.path
-
+import logging
 import pywintypes
 import win32com.client as win32
 
 from error_handler import handle_errors
-from exceptions import ExcelConnectionError, DataCleaningError
+from exceptions import ExcelConnectionError
 
 FILTER_VALUES_OPERATOR = 7
 SORT_ASCENDING = 1
 HEADER_PRESENT = 1
 SORT_TOP_TO_BOTTOM = 1
-
+XL_H_ALIGN_LEFT= 2
 
 def get_column_number_of_heading(ws: object, column_name: str) -> int | None:
     for cell in ws.UsedRange.Rows(1).Cells:
@@ -46,33 +45,59 @@ def sort_rows(ws: object, column_header: str) -> None:
 
 @handle_errors
 def launch_spreadsheet_app() -> object:
+    log = logging.getLogger("customer_data_cleaner")
     try:
-        excel = win32.Dispatch("Excel.Application")
+        log.info("Launching Excel application")
+        excel = win32.DispatchEx("Excel.Application")
         excel.Visible = True
+        log.info("Excel application launched successfully")
         return excel
     except pywintypes.com_error as e:
+        log.error(f"Failed to launch spreadsheet: {e}")
         raise ExcelConnectionError(f"Failed to launch spreadsheet: {e}")
 
 
 @handle_errors
-def open_spreadsheet(excel: object, file_path: str, worksheet_name: str) -> tuple[object, object]:
+def remove_filters(ws: object) -> None:
+    log = logging.getLogger("customer_data_cleaner")
     try:
-        wb = excel.Workbooks.Open(file_path)
-        ws = wb.Worksheets(worksheet_name)
-        return wb, ws
+        if ws.FilterMode:
+            log.info("Removing existing filters from worksheet")
+            ws.ShowAllData()
+            log.info("Filters removed successfully")
     except pywintypes.com_error as e:
-        raise ExcelConnectionError(f"Failed to open spreadsheet: {e}")
+        log.error(f"Excel connection error: {e}")
+        raise ExcelConnectionError(f"Excel connection error: {e}")
 
 
 @handle_errors
-def remove_filters(ws: object) -> None:
+def open_spreadsheet(excel: object, file_path: str, worksheet_name: str) -> tuple[object, object]:
+    log = logging.getLogger("customer_data_cleaner")
     try:
-        if ws.FilterMode:
-            ws.ShowAllData()
+        log.info(f"Opening spreadsheet: {file_path}")
+        wb = excel.Workbooks.Open(file_path)
+        ws = wb.Worksheets(worksheet_name)
+        log.info(f"Worksheet '{worksheet_name}' opened successfully")
+        return wb, ws
     except pywintypes.com_error as e:
-        raise ExcelConnectionError(f"Excel connection error: {e}")
+        log.error(f"Failed to open spreadsheet: {e}")
+        raise ExcelConnectionError(f"Failed to open spreadsheet: {e}")
 
-def input_values_to_spreadsheet(df:object, ws: object) -> None:
+
+def create_new_workbook(excel: object, file_path: str, worksheet_name: str) -> tuple[object, object]:
+    log = logging.getLogger("customer_data_cleaner")
+    log.info(f"Creating new workbook: {file_path}")
+    wb = excel.Workbooks.Add()
+    ws = wb.Worksheets(1)
+    ws.Name = worksheet_name
+    wb.SaveAs(file_path)
+    log.info(f"New workbook created and saved as: {file_path}")
+    return wb, ws
+
+
+def input_values_to_spreadsheet(df: object, ws: object) -> None:
+    log = logging.getLogger("customer_data_cleaner")
+    log.info(f"Writing {len(df)} records to spreadsheet")
     headers = df.columns.tolist()
     values = df.where(df.notna(), None).values.tolist()
     ws.Range(
@@ -84,9 +109,20 @@ def input_values_to_spreadsheet(df:object, ws: object) -> None:
         ws.Cells(2, 1),
         ws.Cells(len(values) + 1, len(values[0]))
     ).Value = values
+    log.info("Data written to spreadsheet successfully")
+
 
 def auto_fit_columns_and_rows(ws: object) -> None:
+    log = logging.getLogger("customer_data_cleaner")
+    log.info("Auto-fitting columns and rows")
     used_range = ws.UsedRange
     used_range.EntireColumn.AutoFit()
     used_range.EntireRow.AutoFit()
+    log.info("Auto-fit completed")
 
+def left_align_text(ws: object) -> None:
+    log = logging.getLogger("customer_data_cleaner")
+    log.info("Left-aligning text in spreadsheet")
+    used_range = ws.UsedRange
+    used_range.Columns.HorizontalAlignment = XL_H_ALIGN_LEFT
+    log.info("Text alignment completed")

@@ -11,3 +11,10 @@ phone = "phone"
 address = "address"
 city = "city"
 postcode = "postcode"
+
+[logging]
+enabled = true
+log_file = "logs/customer_data_cleaner.log"
+level = "INFO"
+max_bytes = 10485760
+backup_count = 5

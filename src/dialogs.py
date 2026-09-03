@@ -1,4 +1,3 @@
-import threading
 import tkinter.messagebox
 from tkinter import Button, Frame, Label, Tk, Toplevel
 
@@ -29,107 +28,103 @@ def show_error_dialog(title: str,
 
 
 def show_statistics_dialog(stats: dict) -> None:
-    def run_dialog():
-        root = Tk()
-        root.withdraw()
+    root = Tk()
+    root.withdraw()
 
-        dialog = Toplevel(root)
-        dialog.title("Data Cleaning Stats")
-        dialog.resizable(False, False)
-        dialog.withdraw()
+    dialog = Toplevel(root)
+    dialog.title("Data Cleaning Stats")
+    dialog.resizable(False, False)
+    dialog.withdraw()
 
-        frame = Frame(
-            dialog,
-            padx=25,
-            pady=20
-        )
-        frame.pack()
+    frame = Frame(
+        dialog,
+        padx=25,
+        pady=20
+    )
+    frame.pack()
 
-        Label(
-            frame,
-            text="Data Cleaning Statistics",
-            font=("Arial", 12, "bold")
-        ).pack(
-            pady=(0, 10)
-        )
+    Label(
+        frame,
+        text="Data Cleaning Statistics",
+        font=("Arial", 12, "bold")
+    ).pack(
+        pady=(0, 10)
+    )
 
-        stat_labels = {
-            "records_processed": "Records Processed",
-            "records_cleaned": "Records Cleaned",
-            "fields_updated": "Fields Updated",
-            "invalid_email_count": "Invalid Emails",
-            "duplicate_customer_count": "Duplicate Customers"
-        }
+    stat_labels = {
+        "records_processed": "Records Processed",
+        "records_cleaned": "Records Cleaned",
+        "fields_updated": "Fields Updated",
+        "invalid_email_count": "Invalid Syntax Emails",
+        "duplicate_customer_count": "Duplicate Customers"
+    }
 
-        for key, label_text in stat_labels.items():
-            if key in stats:
-                if key == "invalid_email_count":
-                    Label(
-                        frame,
-                        text="For user review:",
-                        font=("Arial", 9),
-                        foreground="#666666",
-                        anchor="w"
-                    ).pack(
-                        fill="x",
-                        pady=(8, 2)
-                    )
-
-                value = stats[key]
-                value_str = str(value)
-
-                stat_frame = Frame(frame)
-                stat_frame.pack(
+    for key, label_text in stat_labels.items():
+        if key in stats:
+            if key == "invalid_email_count":
+                Label(
+                    frame,
+                    text="For user review:",
+                    font=("Arial", 9),
+                    foreground="#666666",
+                    anchor="w"
+                ).pack(
                     fill="x",
-                    pady=0
+                    pady=(8, 2)
                 )
 
-                Label(
-                    stat_frame,
-                    text=f"{label_text}:",
-                    font=("Arial", 9),
-                    anchor="w"
-                ).pack(side="left")
+            value = stats[key]
+            value_str = str(value)
 
-                Label(
-                    stat_frame,
-                    text=value_str,
-                    font=("Arial", 9),
-                    anchor="e"
-                ).pack(side="right")
-
-        if "processing_time" in stats:
-            processing_time = stats["processing_time"]
-            Label(
-                frame,
-                text=f"Processing Time: {processing_time}s",
-                font=("Arial", 9),
-                foreground="#666666"
-            ).pack(
-                pady=(8, 10)
+            stat_frame = Frame(frame)
+            stat_frame.pack(
+                fill="x",
+                pady=0
             )
 
-        Button(
+            Label(
+                stat_frame,
+                text=f"{label_text}:",
+                font=("Arial", 9),
+                anchor="w"
+            ).pack(side="left")
+
+            Label(
+                stat_frame,
+                text=value_str,
+                font=("Arial", 9),
+                anchor="e"
+            ).pack(side="right")
+
+    if "processing_time" in stats:
+        processing_time = stats["processing_time"]
+        Label(
             frame,
-            text="OK",
-            width=10,
-            command=dialog.destroy
+            text=f"Processing Time: {processing_time}s",
+            font=("Arial", 9),
+            foreground="#666666"
         ).pack(
-            pady=(0, 5)
+            pady=(8, 10)
         )
 
-        dialog.protocol("WM_DELETE_WINDOW", dialog.destroy)
+    Button(
+        frame,
+        text="OK",
+        width=10,
+        command=lambda: (dialog.destroy(), root.destroy())
+    ).pack(
+        pady=(0, 5)
+    )
 
-        _centre_window(dialog)
-        dialog.deiconify()
-        dialog.lift()
-        dialog.attributes("-topmost", True)
+    dialog.protocol("WM_DELETE_WINDOW", lambda: (dialog.destroy(), root.destroy()))
 
-        dialog.wait_window()
-        root.destroy()
+    _centre_window(dialog)
+    dialog.deiconify()
+    dialog.lift()
+    dialog.attributes("-topmost", True)
 
-    thread = threading.Thread(target=run_dialog, daemon=True)
-    thread.start()
+    # Use update() to process events without blocking
+    root.update()
 
 
 def show_temporary_message(root: Tk,
