@@ -83,9 +83,6 @@ def main():
         log.info("Saving workbook")
         wb.Save()
 
-        log.info("Displaying statistics dialog")
-        dialogs.show_statistics_dialog(stats)
-
         log.info("Setting up and running main dialog")
         dialog_setup.setup_and_run_dialog(
             excel,
@@ -93,6 +90,7 @@ def main():
             output_file_path,
             ws,
             cfg,
+            stats,
         )
 
     finally:

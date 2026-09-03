@@ -11,10 +11,15 @@ def setup_and_run_dialog(excel: object,
                          wb: object,
                          file_loc: str,
                          ws: object,
-                         config: dict
+                         config: dict,
+                         stats: dict = None
                          ) -> None:
     try:
         root = dialogs.create_dialog_root()
+
+        # Show statistics dialog using the same root as main dialog
+        if stats:
+            dialogs.show_statistics_dialog(stats, root)
 
         review_duplicates = lambda: filters.filter_duplicate_customers(
             file_loc,

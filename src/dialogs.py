@@ -27,9 +27,13 @@ def show_error_dialog(title: str,
     error_root.destroy()
 
 
-def show_statistics_dialog(stats: dict) -> None:
-    root = Tk()
-    root.withdraw()
+def show_statistics_dialog(stats: dict, root: Tk = None) -> Toplevel:
+    if root is None:
+        root = Tk()
+        root.withdraw()
+        should_destroy_root = True
+    else:
+        should_destroy_root = False
 
     dialog = Toplevel(root)
     dialog.title("Data Cleaning Stats")
@@ -107,16 +111,22 @@ def show_statistics_dialog(stats: dict) -> None:
             pady=(8, 10)
         )
 
+    def close_dialog():
+        if dialog.winfo_exists():
+            dialog.destroy()
+        if should_destroy_root and root.winfo_exists():
+            root.destroy()
+
     Button(
         frame,
         text="OK",
         width=10,
-        command=lambda: (dialog.destroy(), root.destroy())
+        command=close_dialog
     ).pack(
         pady=(0, 5)
     )
 
-    dialog.protocol("WM_DELETE_WINDOW", lambda: (dialog.destroy(), root.destroy()))
+    dialog.protocol("WM_DELETE_WINDOW", close_dialog)
 
     _centre_window(dialog)
     dialog.deiconify()
@@ -125,6 +135,8 @@ def show_statistics_dialog(stats: dict) -> None:
 
     # Use update() to process events without blocking
     root.update()
+
+    return dialog
 
 
 def show_temporary_message(root: Tk,
