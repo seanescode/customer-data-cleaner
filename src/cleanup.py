@@ -62,11 +62,12 @@ def clean_city(city: Any) -> str:
 def clean_postcode(postcode: Any) -> str:
     if not postcode:
         return ""
-
     postcode = str(postcode)
     postcode = postcode.replace(" ", "")
     postcode = postcode.upper()
-    return postcode[:3] + " " + postcode[3:]
+    if len(postcode)==7:
+        postcode = postcode[:3] + " " + postcode[3:]
+    return postcode
 
 
 def clean_column(df: Any, column: str, cleaning_function: Callable[[Any], str]) -> None:

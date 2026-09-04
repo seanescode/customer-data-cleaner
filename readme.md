@@ -48,7 +48,6 @@ between screens.
 # Future Improvements
 
 * Add email domain checks. This would check the part of the email address after the `@` symbol by querying the Domain Name System (DNS) to confirm that the domain exists and can receive emails.
-* Add statistics showing how many records were cleaned and how many updates were made.
 * The current email syntax check does not confirm whether an email address actually exists; it only checks whether the syntax is valid. Users who need to verify whether an email address exists could use an email verification service, although these are typically paid services once free usage limits have been reached.
 * Add fuzzy matching to help identify potential duplicate records containing small differences or typos.
 * Make the application cross-platform. The current version uses Windows-specific automation to interact directly with Microsoft Excel. A future version could instead use a file-based workflow, where users provide an `.xlsx` or `.csv` file, the application processes the data, and then saves a cleaned version. This would make the core functionality usable on Windows, macOS and Linux, with the resulting files compatible with applications such as Microsoft Excel, LibreOffice and Google Sheets.

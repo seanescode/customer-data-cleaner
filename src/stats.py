@@ -28,34 +28,6 @@ def count_duplicate_customers(df) -> int:
     return len(dataframe.get_duplicate_customers(df))
 
 
-def count_fields_updated(original_df, cleaned_df) -> int:
-    """Count the total number of fields that were updated."""
-    if not original_df.index.equals(cleaned_df.index):
-        raise ValueError("DataFrames have different indexes.")
-
-    if not original_df.columns.equals(cleaned_df.columns):
-        raise ValueError("DataFrames have different columns.")
-
-    differences = original_df.ne(cleaned_df)
-    differences &= ~(original_df.isna() & cleaned_df.isna())
-
-    return differences.sum().sum()
-
-
-def count_records_cleaned(original_df, cleaned_df) -> int:
-    """Count the number of records that were changed."""
-    if not original_df.index.equals(cleaned_df.index):
-        raise ValueError("DataFrames have different indexes.")
-
-    if not original_df.columns.equals(cleaned_df.columns):
-        raise ValueError("DataFrames have different columns.")
-
-    differences = original_df.ne(cleaned_df)
-    differences &= ~(original_df.isna() & cleaned_df.isna())
-
-    return differences.any(axis=1).sum()
-
-
 def get_statistics(
     program_start_time: float,
     finished_cleaning_time: float,
@@ -69,7 +41,7 @@ def get_statistics(
 
     stats = {
         "records_processed": count_records_processed(cleaned_df),
-        "records_cleaned": count_records_cleaned(
+        "records_cleaned": count_records_updated(
             original_df,
             cleaned_df,
         ),
@@ -92,3 +64,33 @@ def get_statistics(
 
     log.info(f"Statistics calculated: {stats}")
     return stats
+
+
+def validate_and_find_changes(original_df, cleaned_df):
+    """
+    Check if tables match, then find cells that are truly different.
+    """
+    # Safety checks: Ensure the sheets match in size and layout
+    if not original_df.index.equals(cleaned_df.index):
+        raise ValueError("The rows do not match between files.")
+    if not original_df.columns.equals(cleaned_df.columns):
+        raise ValueError("The column names do not match between files.")
+    # Find every cell that is NOT EQUAL (.ne)
+    raw_changes = original_df.ne(cleaned_df)
+    # Fix the blank cell trick: If both are blank, it's NOT a change
+    both_are_blank = original_df.isna() & cleaned_df.isna()
+    # Keep changes ONLY where they weren't both blank
+    true_changes = raw_changes & ~both_are_blank
+    return true_changes
+
+
+def count_fields_updated(original_df, cleaned_df) -> int:
+    """Count the total number of individual cells that changed."""
+    changes = validate_and_find_changes(original_df, cleaned_df)
+    return changes.sum().sum()  # Adds up every single changed cell
+
+
+def count_records_updated(original_df, cleaned_df) -> int:
+    """Count how many rows had at least one change."""
+    changes = validate_and_find_changes(original_df, cleaned_df)
+    return changes.any(axis=1).sum()  # Counts rows with any True changes
