@@ -8,7 +8,7 @@ import dialog_setup
 import dialogs
 import pywintypes
 import spreadsheet
-import statistics
+import stats
 
 
 def main():
@@ -40,14 +40,14 @@ def main():
     log.info(f"Data cleaning completed in {finished_cleaning_time - program_start_time:.2f} seconds")
 
     log.info("Calculating statistics")
-    stats = statistics.get_statistics(
+    statistics_result = stats.get_statistics(
         program_start_time,
         finished_cleaning_time,
         original_df,
         df,
         cfg["columns"]["email"],
     )
-    log.info(f"Statistics: {stats}")
+    log.info(f"Statistics: {statistics_result}")
 
     log.info("Launching Excel application")
     excel = spreadsheet.launch_spreadsheet_app()
@@ -90,7 +90,7 @@ def main():
             output_file_path,
             ws,
             cfg,
-            stats,
+            statistics_result,
         )
 
     finally:

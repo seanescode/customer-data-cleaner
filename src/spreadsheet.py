@@ -99,7 +99,7 @@ def input_values_to_spreadsheet(df: object, ws: object) -> None:
     log = logging.getLogger("customer_data_cleaner")
     log.info(f"Writing {len(df)} records to spreadsheet")
     headers = df.columns.tolist()
-    values = df.where(df.notna(), None).values.tolist()
+    values = df.where(df.notna(), "").values.tolist()
     ws.Range(
         ws.Cells(1, 1),
         ws.Cells(1, len(headers))

@@ -1,4 +1,5 @@
 import logging
+import sys
 import tomllib
 from pathlib import Path
 
@@ -7,11 +8,19 @@ from exceptions import ConfigNotFoundError, ConfigParseError, ConfigKeyError
 import logger
 
 
+def get_config_path() -> Path:
+    """Return the path to config.toml."""
+    if getattr(sys, "frozen", False):
+        return Path(sys.executable).parent / "config.toml"
+
+    return Path(__file__).parent.parent / "config.toml"
+
+
 @handle_errors
 def load_config() -> dict:
     """Load the application configuration from the TOML file."""
     try:
-        config_path = Path(__file__).parent.parent / "config.toml"
+        config_path = get_config_path()
         with open(config_path, "rb") as f:
             return tomllib.load(f)
     except FileNotFoundError:

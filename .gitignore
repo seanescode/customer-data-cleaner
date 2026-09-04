@@ -1,7 +1,10 @@
 .idea/
 .venv/
 __pycache__/
-data/raw/
 *.xlsx
 *.xls
 logs/
+.pytest_cache/
+build/
+dist/
+*.spec
