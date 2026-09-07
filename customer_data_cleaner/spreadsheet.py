@@ -1,15 +1,18 @@
 import logging
+
 import pywintypes
 import win32com.client as win32
 
 from error_handler import handle_errors
 from exceptions import ExcelConnectionError
 
+
 FILTER_VALUES_OPERATOR = 7
 SORT_ASCENDING = 1
 HEADER_PRESENT = 1
 SORT_TOP_TO_BOTTOM = 1
-XL_H_ALIGN_LEFT= 2
+XL_H_ALIGN_LEFT = 2
+
 
 def get_column_number_of_heading(ws: object, column_name: str) -> int | None:
     for cell in ws.UsedRange.Rows(1).Cells:
@@ -19,13 +22,12 @@ def get_column_number_of_heading(ws: object, column_name: str) -> int | None:
 
 
 def apply_filter(ws: object, column_number: int, filter_values: list[str]) -> None:
-
     used = ws.UsedRange
     used.AutoFilter(
         # - used.Column + 1 ensures this would work if ever starting cell changed from A1
-        Field = column_number - used.Column + 1,
-        Criteria1 = tuple(filter_values),
-        Operator = FILTER_VALUES_OPERATOR
+        Field=column_number - used.Column + 1,
+        Criteria1=tuple(filter_values),
+        Operator=FILTER_VALUES_OPERATOR
     )
 
 
@@ -119,6 +121,7 @@ def auto_fit_columns_and_rows(ws: object) -> None:
     used_range.EntireColumn.AutoFit()
     used_range.EntireRow.AutoFit()
     log.info("Auto-fit completed")
+
 
 def left_align_text(ws: object) -> None:
     log = logging.getLogger("customer_data_cleaner")

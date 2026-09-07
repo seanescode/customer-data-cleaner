@@ -1,7 +1,6 @@
 import dialogs
-import spreadsheet
 import filters
-
+import spreadsheet
 from error_handler import handle_errors
 from exceptions import DialogSetupError
 

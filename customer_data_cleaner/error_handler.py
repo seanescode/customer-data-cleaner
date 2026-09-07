@@ -29,6 +29,7 @@ def _show_error_dialog(title: str, message: str) -> None:
 
 def handle_errors(func: Callable[..., Any]) -> Callable[..., Any]:
     """Decorator to handle custom exceptions and show appropriate dialog messages."""
+
     @wraps(func)
     def wrapper(*args: Any, **kwargs: Any) -> Any:
         log = logging.getLogger("customer_data_cleaner")
@@ -36,16 +37,16 @@ def handle_errors(func: Callable[..., Any]) -> Callable[..., Any]:
             return func(*args, **kwargs)
 
         except (
-            ConfigNotFoundError,
-            ConfigParseError,
-            ConfigKeyError,
+                ConfigNotFoundError,
+                ConfigParseError,
+                ConfigKeyError,
         ) as e:
             log.error(f"Configuration error in {func.__name__}: {e}")
             _show_error_dialog("Config Error", str(e))
 
         except (
-            SpreadsheetNotFoundError,
-            SpreadsheetAccessError,
+                SpreadsheetNotFoundError,
+                SpreadsheetAccessError,
         ) as e:
             log.error(f"Spreadsheet error in {func.__name__}: {e}")
             _show_error_dialog("Spreadsheet Error", str(e))

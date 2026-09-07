@@ -6,7 +6,7 @@ from exceptions import DataCleaningError, ConfigKeyError
 
 
 def clean_name(customer_name: Any) -> str:
-    customer_name = str(customer_name) # convert to string first so if user inputs a number for example won't crash
+    customer_name = str(customer_name)  # convert to string first so if user inputs a number for example won't crash
     customer_name = " ".join(customer_name.split())
     customer_name = customer_name.title()
     return customer_name
@@ -65,7 +65,7 @@ def clean_postcode(postcode: Any) -> str:
     postcode = str(postcode)
     postcode = postcode.replace(" ", "")
     postcode = postcode.upper()
-    if len(postcode)==7:
+    if len(postcode) == 7:
         postcode = postcode[:3] + " " + postcode[3:]
     return postcode
 

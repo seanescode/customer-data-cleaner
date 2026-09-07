@@ -1,10 +1,10 @@
 import logging
-import pywintypes
 from typing import Callable
 
-import spreadsheet
-import dataframe
+import pywintypes
 
+import dataframe
+import spreadsheet
 from error_handler import handle_errors
 from exceptions import (
     SpreadsheetNotFoundError,
@@ -18,10 +18,10 @@ from exceptions import (
 
 @handle_errors
 def filter_to_invalid_emails(
-    file_path: str,
-    ws: object,
-    email_column: str,
-    no_records_found_msg: Callable[[str], None],
+        file_path: str,
+        ws: object,
+        email_column: str,
+        no_records_found_msg: Callable[[str], None],
 ) -> None:
     """Filter the spreadsheet to show customers with invalid emails."""
     log = logging.getLogger("customer_data_cleaner")
@@ -65,11 +65,11 @@ def filter_to_invalid_emails(
 
 @handle_errors
 def filter_duplicate_customers(
-    file_path: str,
-    ws: object,
-    name_column: str,
-    customer_id_column: str,
-    no_records_found_msg: Callable[[str], None],
+        file_path: str,
+        ws: object,
+        name_column: str,
+        customer_id_column: str,
+        no_records_found_msg: Callable[[str], None],
 ) -> None:
     """Filter the spreadsheet to show duplicate customers."""
     log = logging.getLogger("customer_data_cleaner")

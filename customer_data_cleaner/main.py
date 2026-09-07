@@ -1,18 +1,21 @@
 import os.path
 import time
 
-import cleanup
-import config
-import dataframe
-import dialog_setup
-import dialogs
 import pywintypes
-import spreadsheet
-import stats
+
+from customer_data_cleaner import (
+    cleanup,
+    config,
+    dataframe,
+    dialog_setup,
+    spreadsheet,
+    stats
+)
 
 
 def main():
     program_start_time = time.time()
+
     cfg = config.load_config()
     log = config.initialize_logging(cfg)
 
@@ -101,6 +104,7 @@ def main():
             log.warning("Failed to close Excel application")
 
     log.info("Customer Data Cleaner completed successfully")
+
 
 if __name__ == "__main__":
     main()

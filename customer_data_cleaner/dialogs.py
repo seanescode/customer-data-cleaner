@@ -141,7 +141,7 @@ def show_statistics_dialog(stats: dict, root: Tk = None) -> Toplevel:
 
 def show_temporary_message(root: Tk,
                            text: str,
-                           duration_ms: int =2500
+                           duration_ms: int = 2500
                            ) -> None:
     message = Toplevel(root)
 
@@ -247,13 +247,13 @@ def _configure_temporary_message_close(message: Toplevel,
 
 
 def show_cleanup_panel(
-    root,
-    excel_hwnd,
-    excel_app,
-    workbook,
-    review_duplicate_customers_button=None,
-    review_invalid_emails_button=None,
-    remove_filters_button=None
+        root,
+        excel_hwnd,
+        excel_app,
+        workbook,
+        review_duplicate_customers_button=None,
+        review_invalid_emails_button=None,
+        remove_filters_button=None
 ):
     panel = _create_cleanup_panel(root)
 
@@ -305,10 +305,10 @@ def _enable_minimize_button(panel):
     )
 
     window_flags = (
-        win32con.SWP_NOMOVE
-        | win32con.SWP_NOSIZE
-        | win32con.SWP_NOZORDER
-        | win32con.SWP_FRAMECHANGED
+            win32con.SWP_NOMOVE
+            | win32con.SWP_NOSIZE
+            | win32con.SWP_NOZORDER
+            | win32con.SWP_FRAMECHANGED
     )
 
     win32gui.SetWindowPos(
@@ -382,10 +382,10 @@ def _configure_panel_close_behavior(panel):
 
 
 def _create_cleanup_panel_content(
-    panel,
-    review_duplicate_customers_button,
-    review_invalid_emails_button,
-    remove_filters_button
+        panel,
+        review_duplicate_customers_button,
+        review_invalid_emails_button,
+        remove_filters_button
 ):
     Label(
         panel,
@@ -445,11 +445,11 @@ def _close_panel_and_root(panel, root):
 
 
 def _monitor_and_position_panel(
-    root,
-    panel,
-    excel_hwnd,
-    excel_app,
-    workbook
+        root,
+        panel,
+        excel_hwnd,
+        excel_app,
+        workbook
 ):
     excel_was_minimized = False
 
@@ -490,8 +490,8 @@ def _monitor_and_position_panel(
 
             if panel.state() != "iconic":
                 if not _position_panel_beside_excel(
-                    panel,
-                    excel_hwnd
+                        panel,
+                        excel_hwnd
                 ):
                     _close_panel_and_root(panel, root)
                     return
@@ -537,15 +537,15 @@ def _position_panel_beside_excel(panel, excel_hwnd):
         )
 
         x = (
-            right
-            - PANEL_WIDTH
-            - PANEL_RIGHT_PADDING
+                right
+                - PANEL_WIDTH
+                - PANEL_RIGHT_PADDING
         )
 
         y = (
-            top
-            + ((bottom - top) // 2)
-            - (PANEL_HEIGHT // 2)
+                top
+                + ((bottom - top) // 2)
+                - (PANEL_HEIGHT // 2)
         )
 
         panel.geometry(

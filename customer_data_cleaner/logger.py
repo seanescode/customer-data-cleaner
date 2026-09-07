@@ -4,11 +4,11 @@ from pathlib import Path
 
 
 def setup_logger(
-    name: str,
-    log_file: str | None = None,
-    level: int = logging.INFO,
-    max_bytes: int = 10 * 1024 * 1024,  # 10 MB
-    backup_count: int = 5,
+        name: str,
+        log_file: str | None = None,
+        level: int = logging.INFO,
+        max_bytes: int = 10 * 1024 * 1024,  # 10 MB
+        backup_count: int = 5,
 ) -> logging.Logger:
     logger = logging.getLogger(name)
     logger.setLevel(level)

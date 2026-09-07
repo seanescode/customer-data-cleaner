@@ -4,8 +4,8 @@ import dataframe
 
 
 def get_processing_time(
-    program_start_time: float,
-    finished_cleaning_time: float,
+        program_start_time: float,
+        finished_cleaning_time: float,
 ) -> float:
     """Calculate the processing time in seconds."""
     return round(finished_cleaning_time - program_start_time, 1)
@@ -29,11 +29,11 @@ def count_duplicate_customers(df) -> int:
 
 
 def get_statistics(
-    program_start_time: float,
-    finished_cleaning_time: float,
-    original_df,
-    cleaned_df,
-    email_col: str,
+        program_start_time: float,
+        finished_cleaning_time: float,
+        original_df,
+        cleaned_df,
+        email_col: str,
 ) -> dict:
     """Calculate and return all processing statistics."""
     log = logging.getLogger("customer_data_cleaner")
