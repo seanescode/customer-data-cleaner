@@ -70,6 +70,8 @@ def main():
                 output_file_path,
                 output_worksheet,
             )
+            # remove data from existing worksheet to ensure no old data is present if the new df has less data
+            spreadsheet.delete_worksheet_data(ws)
 
         log.info("Removing existing filters")
         spreadsheet.remove_filters(ws)

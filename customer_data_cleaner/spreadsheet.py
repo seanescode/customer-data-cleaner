@@ -101,12 +101,12 @@ def input_values_to_spreadsheet(df: object, ws: object) -> None:
     log = logging.getLogger("customer_data_cleaner")
     log.info(f"Writing {len(df)} records to spreadsheet")
     headers = df.columns.tolist()
-    values = df.where(df.notna(), "").values.tolist()
     ws.Range(
         ws.Cells(1, 1),
         ws.Cells(1, len(headers))
     ).Value = headers
 
+    values = df.where(df.notna(), "").values.tolist()
     ws.Range(
         ws.Cells(2, 1),
         ws.Cells(len(values) + 1, len(values[0]))
@@ -129,3 +129,9 @@ def left_align_text(ws: object) -> None:
     used_range = ws.UsedRange
     used_range.Columns.HorizontalAlignment = XL_H_ALIGN_LEFT
     log.info("Text alignment completed")
+
+
+def delete_worksheet_data(ws: object) -> None:
+    log = logging.getLogger("customer_data_cleaner")
+    log.info("Completely clearing existing worksheet data and formatting")
+    ws.Cells.Clear()
