@@ -1,0 +1,20 @@
+[spreadsheet]
+input_file_path = "C:/Users/your_username/PycharmProjects/customer-data-cleaner/sample_data/dummy_customer_data.xlsx"
+output_file_path = "C:/Users/your_username/PycharmProjects/customer-data-cleaner/sample_data/dummy_customer_data_cleaned.xlsx"
+output_worksheet_name = "Cleaned Data"
+
+[columns]
+customer_id = "customer_id"
+name = "name"
+email = "email"
+phone = "phone"
+address = "address"
+city = "city"
+postcode = "postcode"
+
+[logging]
+enabled = true
+log_file = "logs/customer_data_cleaner.log"
+level = "INFO"
+max_bytes = 10485760
+backup_count = 5
