@@ -7,3 +7,4 @@ build/
 dist/
 *.spec
 config.toml
+TODO.md

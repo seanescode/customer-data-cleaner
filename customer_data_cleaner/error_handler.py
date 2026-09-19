@@ -23,7 +23,7 @@ def _show_error_dialog(title: str, message: str) -> None:
     import sys
 
     if sys.platform == "win32":
-        import dialogs
+        from customer_data_cleaner import dialogs
         dialogs.show_error_dialog(title, message)
 
 
