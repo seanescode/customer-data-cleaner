@@ -53,6 +53,9 @@ def initialize_logging(config: dict) -> logging.Logger:
             return logging.getLogger("null")
 
         log_file = logging_config.get("log_file", "logs/customer_data_cleaner.log")
+        # Resolve log file path relative to project root
+        if not Path(log_file).is_absolute():
+            log_file = str(Path(__file__).parent.parent / log_file)
         level_str = logging_config.get("level", "INFO")
         max_bytes = logging_config.get("max_bytes", 10 * 1024 * 1024)
         backup_count = logging_config.get("backup_count", 5)

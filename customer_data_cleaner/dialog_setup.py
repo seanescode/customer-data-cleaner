@@ -1,6 +1,7 @@
 import dialogs
 import filters
 import spreadsheet
+import win32gui
 from error_handler import handle_errors
 from exceptions import DialogSetupError
 
@@ -15,6 +16,9 @@ def setup_and_run_dialog(excel: object,
                          ) -> None:
     try:
         root = dialogs.create_dialog_root()
+
+        # Bring Excel to foreground
+        win32gui.SetForegroundWindow(excel.Hwnd)
 
         # Show statistics dialog using the same root as main dialog
         if stats:
@@ -40,8 +44,6 @@ def setup_and_run_dialog(excel: object,
         dialogs.show_cleanup_panel(
             root=root,
             excel_hwnd=excel.Hwnd,
-            excel_app=excel,
-            workbook=wb,
             review_duplicate_customers_button=review_duplicates,
             review_invalid_emails_button=review_invalid_emails,
             remove_filters_button=remove_filters

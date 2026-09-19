@@ -2,6 +2,7 @@ import logging
 
 import pywintypes
 import win32com.client as win32
+import win32gui
 
 from error_handler import handle_errors
 from exceptions import ExcelConnectionError
@@ -37,10 +38,15 @@ def sort_rows(ws: object, column_header: str) -> None:
 
         if cell.Value == column_header:
             starting_cell = ws.Cells(cell.Row + 1, cell.Column)
-            used.Sort(
+            # Sort entire data range (all columns, excluding header)
+            data_range = ws.Range(
+                ws.Cells(cell.Row + 1, 1),
+                ws.Cells(used.Rows.Count, used.Columns.Count)
+            )
+            data_range.Sort(
                 Key1=starting_cell,
                 Order1=SORT_ASCENDING,
-                Header=HEADER_PRESENT,
+                Header=0,  # xlNo - no header in data range
                 Orientation=SORT_TOP_TO_BOTTOM
             )
 

@@ -1,6 +1,6 @@
 [spreadsheet]
-input_file_path = "C:\\Users\\seane\\PycharmProjects\\customer-data-cleaner\\sample_data\\raw\\dummy_customer_data.xlsx"
-output_file_path = "C:\\Users\\seane\\PycharmProjects\\customer-data-cleaner\\sample_data\\cleaned\\dummy_customer_data_cleaned.xlsx"
+input_file_path = "C:/Users/redmo/PycharmProjects/customer-data-cleaner/sample_data/dummy_customer_data.xlsx"
+output_file_path = "C:/Users/redmo/PycharmProjects/customer-data-cleaner/sample_data/dummy_customer_data_cleaned.xlsx"
 output_worksheet_name = "Cleaned Data"
 
 [columns]
