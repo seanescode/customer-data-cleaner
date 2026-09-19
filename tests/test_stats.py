@@ -1,7 +1,7 @@
 import pandas as pd
 import pytest
 
-from stats import (
+from customer_data_cleaner.stats import (
     get_processing_time,
     count_records_processed,
     count_invalid_emails,

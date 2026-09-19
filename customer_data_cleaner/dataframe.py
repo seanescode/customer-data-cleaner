@@ -1,8 +1,8 @@
 import pandas
 from email_validator import EmailNotValidError, validate_email
 
-from error_handler import handle_errors
-from exceptions import (
+from customer_data_cleaner.error_handler import handle_errors
+from customer_data_cleaner.exceptions import (
     SpreadsheetNotFoundError,
     SpreadsheetAccessError,
     DuplicateDetectionError,

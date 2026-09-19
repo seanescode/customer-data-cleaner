@@ -7,10 +7,7 @@ name = "customer-cleanup"
 version = "0.1.0"
 
 [tool.setuptools]
-py-modules = ["cleanup"]
-
-[tool.setuptools.package-dir]
-"" = "src"
+packages = ["customer_data_cleaner"]
 
 [tool.pytest.ini_options]
-pythonpath = ["src"]
+pythonpath = ["."]

@@ -1,8 +1,8 @@
 import logging
 from typing import Any, Callable
 
-from error_handler import handle_errors
-from exceptions import DataCleaningError, ConfigKeyError
+from customer_data_cleaner.error_handler import handle_errors
+from customer_data_cleaner.exceptions import DataCleaningError, ConfigKeyError
 
 
 def clean_name(customer_name: Any) -> str:

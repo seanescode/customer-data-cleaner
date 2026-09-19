@@ -1,6 +1,6 @@
 import logging
 
-import dataframe
+from customer_data_cleaner import dataframe
 
 
 def get_processing_time(

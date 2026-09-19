@@ -2,7 +2,7 @@ import logging
 from functools import wraps
 from typing import Any, Callable
 
-from exceptions import (
+from customer_data_cleaner.exceptions import (
     ConfigNotFoundError,
     ConfigParseError,
     ConfigKeyError,

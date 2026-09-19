@@ -3,10 +3,9 @@ from typing import Callable
 
 import pywintypes
 
-import dataframe
-import spreadsheet
-from error_handler import handle_errors
-from exceptions import (
+from customer_data_cleaner import dataframe, spreadsheet
+from customer_data_cleaner.error_handler import handle_errors
+from customer_data_cleaner.exceptions import (
     SpreadsheetNotFoundError,
     SpreadsheetAccessError,
     ExcelConnectionError,

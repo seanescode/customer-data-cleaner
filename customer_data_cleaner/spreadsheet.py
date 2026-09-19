@@ -4,8 +4,8 @@ import pywintypes
 import win32com.client as win32
 import win32gui
 
-from error_handler import handle_errors
-from exceptions import ExcelConnectionError
+from customer_data_cleaner.error_handler import handle_errors
+from customer_data_cleaner.exceptions import ExcelConnectionError
 
 
 FILTER_VALUES_OPERATOR = 7

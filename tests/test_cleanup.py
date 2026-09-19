@@ -1,12 +1,11 @@
 import pandas as pd
 
-from cleanup import (
+from customer_data_cleaner.cleanup import (
     clean_name,
     clean_email,
     clean_phone_number,
     clean_address,
     clean_city,
-
     clean_postcode,
     clean_column,
     clean_data

@@ -3,9 +3,9 @@ import sys
 import tomllib
 from pathlib import Path
 
-import logger
-from error_handler import handle_errors
-from exceptions import ConfigNotFoundError, ConfigParseError, ConfigKeyError
+from customer_data_cleaner import logger
+from customer_data_cleaner.error_handler import handle_errors
+from customer_data_cleaner.exceptions import ConfigNotFoundError, ConfigParseError, ConfigKeyError
 
 
 def get_config_path() -> Path:

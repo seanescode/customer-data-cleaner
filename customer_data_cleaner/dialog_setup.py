@@ -1,9 +1,7 @@
-import dialogs
-import filters
-import spreadsheet
+from customer_data_cleaner import dialogs, filters, spreadsheet
 import win32gui
-from error_handler import handle_errors
-from exceptions import DialogSetupError
+from customer_data_cleaner.error_handler import handle_errors
+from customer_data_cleaner.exceptions import DialogSetupError
 
 
 @handle_errors
